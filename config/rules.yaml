@@ -1,41 +1,56 @@
 rules:
   - name: "Receipts & Invoices"
     condition:
-      name_contains: ["receipt", "invoice", "bill"]
+      name_contains: ["receipt", "invoice", "bill", "tax", "statement"]
     destination: "Finance/Receipts"
 
   - name: "Screenshots"
     condition:
-      name_contains: ["screenshot", "screen_shot"]
+      name_contains: ["screenshot", "screen_shot", "capture"]
     destination: "Images/Screenshots"
 
   - name: "Photos with EXIF"
     condition:
-      extensions: [".png", ".jpg", ".jpeg"]
+      extensions: [".png", ".jpg", ".jpeg", ".heic"]
       has_exif_date: true
     destination: "Photos/{year}/{month}"
 
   - name: "Images"
     condition:
-      extensions: [".png", ".jpg", ".jpeg", ".gif", ".webp"]
+      extensions: [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg", ".bmp", ".ico", ".tiff", ".raw", ".heic"]
     destination: "Images/Other"
+
+  - name: "Audio"
+    condition:
+      extensions: [".mp3", ".wav", ".flac", ".m4a", ".aac", ".ogg", ".wma", ".mid", ".midi", ".opus", ".aiff"]
+    destination: "Audio"
 
   - name: "Documents"
     condition:
-      extensions: [".pdf", ".doc", ".docx", ".txt", ".csv", ".xlsx"]
+      extensions: [".pdf", ".doc", ".docx", ".txt", ".csv", ".xlsx", ".xls", ".ppt", ".pptx", ".rtf", ".odt", ".ods", ".odp", ".epub", ".mobi", ".md"]
     destination: "Documents"
 
-  - name: "Code"
+  - name: "Executables & Installers"
     condition:
-      extensions: [".py", ".js", ".html", ".css", ".json", ".java", ".cpp"]
-    destination: "Code"
+      extensions: [".exe", ".msi", ".dmg", ".iso", ".apk", ".bat", ".cmd", ".ps1", ".sh", ".app"]
+    destination: "Installers"
 
   - name: "Archives"
     condition:
-      extensions: [".zip", ".rar", ".tar", ".gz", ".7z"]
+      extensions: [".zip", ".rar", ".tar", ".gz", ".7z", ".bz2", ".xz", ".tgz"]
     destination: "Archives"
 
   - name: "Videos"
     condition:
-      extensions: [".mp4", ".mkv", ".avi", ".mov"]
+      extensions: [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".m4v", ".3gp"]
     destination: "Videos"
+
+  - name: "Code"
+    condition:
+      extensions: [".py", ".js", ".html", ".css", ".json", ".java", ".cpp", ".c", ".cs", ".php", ".ts", ".jsx", ".tsx", ".yaml", ".yml", ".xml", ".sql"]
+    destination: "Code"
+
+  - name: "Design & Fonts"
+    condition:
+      extensions: [".psd", ".ai", ".xd", ".fig", ".ttf", ".otf", ".woff", ".woff2", ".blend"]
+    destination: "Design & Fonts"

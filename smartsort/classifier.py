@@ -23,13 +23,20 @@ class FileClassifier:
             'creation_date': datetime.fromtimestamp(os.path.getctime(filepath))
         }
 
-        # Content sniffing
-        kind = filetype.guess(filepath)
-        if kind is not None:
-            info['extension'] = f".{kind.extension}".lower()
+        # Primary extension from filename
+        _, ext = os.path.splitext(filepath)
+        ext = ext.lower()
+
+        if ext:
+            info['extension'] = ext
         else:
-            _, ext = os.path.splitext(filepath)
-            info['extension'] = ext.lower()
+            # Fallback to content sniffing for extensionless files
+            try:
+                kind = filetype.guess(filepath)
+                if kind is not None:
+                    info['extension'] = f".{kind.extension}".lower()
+            except Exception:
+                pass
 
         # EXIF extraction for images
         if info['extension'] in ['.jpg', '.jpeg', '.png', '.webp']:
