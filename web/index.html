@@ -3,57 +3,49 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSort Terminal Engine</title>
+  <title>SmartSort Engine</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Magic UI Interactive Particle Grid Background -->
   <div class="particles-bg"></div>
 
   <div class="terminal-app-container">
     <!-- Top Header Bar -->
     <header class="terminal-header glass-card">
       <div class="header-left">
-        <div class="logo-box glow-pulse">⚡</div>
-        <div class="title-group">
-          <h1 class="animated-gradient-text">SMARTSORT</h1>
-          <div class="status-badge">
-            <span class="dot glowing"></span>
-            <span class="status-text">SYSTEM ONLINE | v1.2.0 Engine</span>
-          </div>
-        </div>
+        <h1 class="header-title">SMARTSORT</h1>
       </div>
 
       <div class="header-right">
-        <div class="path-input-group border-beam-box">
+        <div class="path-input-group">
           <span class="prompt-symbol">$</span>
           <input type="text" id="targetPath" placeholder="Target folder path (click Browse Folder or type)..." readonly />
-          <button id="browseBtn" class="magic-btn shimmer-emerald">
-            📁 Browse Folder
+          <button id="browseBtn" class="pill-btn pill-red">
+            <span class="dot red"></span> BROWSE FOLDER
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Magic UI Action Toolbar -->
+    <!-- Pill Action Toolbar -->
     <section class="toolbar-section">
       <div class="toolbar-group">
-        <button id="organizeBtn" class="magic-btn shimmer-emerald primary-btn">⚡ [ Organize ]</button>
-        <button id="dryRunBtn" class="magic-btn shimmer-blue">🔍 [ Dry Run ]</button>
-        <button id="scanBtn" class="magic-btn shimmer-blue">📊 [ Scan Storage ]</button>
-        <button id="topFilesBtn" class="magic-btn shimmer-blue">🐘 [ Top Files ]</button>
-        <button id="cleanEmptyBtn" class="magic-btn shimmer-amber">🧹 [ Clean Empty ]</button>
-        <button id="undoBtn" class="magic-btn shimmer-purple">↩ [ Undo Last ]</button>
-        <button id="historyBtn" class="magic-btn shimmer-dark">🕒 [ History ]</button>
-        <button id="clearBtn" class="magic-btn shimmer-dark">🗑 [ Clear ]</button>
-        <button id="helpBtn" class="magic-btn shimmer-dark">❓ [ Help ]</button>
+        <button id="organizeBtn" class="pill-btn pill-red active-pill"><span class="dot red"></span> ORGANIZE</button>
+        <button id="dryRunBtn" class="pill-btn"><span class="dot muted"></span> DRY RUN</button>
+        <button id="scanBtn" class="pill-btn"><span class="dot muted"></span> SCAN STORAGE</button>
+        <button id="topFilesBtn" class="pill-btn"><span class="dot muted"></span> TOP FILES</button>
+        <button id="cleanEmptyBtn" class="pill-btn"><span class="dot muted"></span> CLEAN EMPTY</button>
+        <button id="undoBtn" class="pill-btn"><span class="dot muted"></span> UNDO LAST</button>
+        <button id="historyBtn" class="pill-btn"><span class="dot muted"></span> HISTORY</button>
+        <button id="clearBtn" class="pill-btn"><span class="dot muted"></span> CLEAR</button>
+        <button id="helpBtn" class="pill-btn"><span class="dot muted"></span> HELP</button>
       </div>
     </section>
 
-    <!-- Main Terminal Screen Frame with Border Beam -->
+    <!-- Main Terminal Screen Frame -->
     <main class="terminal-screen-card glass-card">
       <div class="terminal-screen-header">
         <div class="window-controls">
@@ -70,7 +62,7 @@
     </main>
 
     <!-- Bottom Command Prompt Entry -->
-    <footer class="prompt-bar glass-card border-beam-box">
+    <footer class="prompt-bar glass-card">
       <span class="prompt-label">smartsort $</span>
       <input type="text" id="cmdInput" placeholder="type command (sort, scan, top-files, dry-run, clean-empty, ls, history, undo, help)..." autocomplete="off" />
       <span class="blinking-cursor">_</span>
