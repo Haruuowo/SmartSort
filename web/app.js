@@ -188,22 +188,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function showHelp() {
-    const helpText = `
-======================= COMMAND REFERENCE =======================
-  scan [path]        Directory category & size breakdown
-  top-files [path]   Show 10 largest files in directory
-  sort [path]        Organize files in directory
-  dry-run [path]     Simulate sort without moving files
-  clean-empty [path] Detect and remove empty subfolders
-  browse             Open Windows folder picker dialog
-  history            Show recent move history
-  undo               Undo last move
-  clear              Clear terminal log screen
-=================================================================
-`;
-    printLine(helpText, 'amber');
+  const helpModal = document.getElementById('helpModal');
+  const closeHelpModalBtn = document.getElementById('closeHelpModalBtn');
+  const closeHelpModalDot = document.getElementById('closeHelpModalDot');
+
+  function openHelpModal() {
+    if (helpModal) helpModal.classList.remove('hidden');
   }
+
+  function closeHelpModal() {
+    if (helpModal) helpModal.classList.add('hidden');
+  }
+
+  if (closeHelpModalBtn) closeHelpModalBtn.addEventListener('click', closeHelpModal);
+  if (closeHelpModalDot) closeHelpModalDot.addEventListener('click', closeHelpModal);
+  if (helpModal) {
+    helpModal.addEventListener('click', (e) => {
+      if (e.target === helpModal) closeHelpModal();
+    });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeHelpModal();
+  });
 
   // Bind Buttons
   browseBtn.addEventListener('click', browseFolder);
@@ -215,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   undoBtn.addEventListener('click', undoLast);
   historyBtn.addEventListener('click', showHistory);
   clearBtn.addEventListener('click', clearTerminal);
-  helpBtn.addEventListener('click', showHelp);
+  helpBtn.addEventListener('click', openHelpModal);
 
   // Command Prompt Input Handler
   cmdInput.addEventListener('keydown', (e) => {
@@ -231,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const cmd = parts[0].lowerCase || parts[0].toLowerCase();
       const arg = parts.slice(1).join(' ');
 
-      if (cmd === 'help' || cmd === '?') showHelp();
+      if (cmd === 'help' || cmd === '?') openHelpModal();
       else if (cmd === 'sort' || cmd === 'run' || cmd === 'organize') runSort(false, arg);
       else if (cmd === 'dry-run' || cmd === 'dryrun' || cmd === 'sim') runSort(true, arg);
       else if (cmd === 'scan' || cmd === 'analyze') runScan(arg);

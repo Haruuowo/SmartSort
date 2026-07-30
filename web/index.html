@@ -41,7 +41,7 @@
         <button id="undoBtn" class="pill-btn"><span class="dot muted"></span> UNDO LAST</button>
         <button id="historyBtn" class="pill-btn"><span class="dot muted"></span> HISTORY</button>
         <button id="clearBtn" class="pill-btn"><span class="dot muted"></span> CLEAR</button>
-        <button id="helpBtn" class="pill-btn"><span class="dot muted"></span> HELP</button>
+        <button id="helpBtn" class="pill-btn"><span class="dot red"></span> HELP</button>
       </div>
     </section>
 
@@ -67,6 +67,99 @@
       <input type="text" id="cmdInput" placeholder="type command (sort, scan, top-files, dry-run, clean-empty, ls, history, undo, help)..." autocomplete="off" />
       <span class="blinking-cursor">_</span>
     </footer>
+  </div>
+
+  <!-- Help & User Guide Terminal Modal -->
+  <div id="helpModal" class="modal-overlay hidden">
+    <div class="modal-card glass-card">
+      <div class="modal-header">
+        <div class="window-controls">
+          <span class="control-dot close" id="closeHelpModalDot"></span>
+          <span class="control-dot minimize"></span>
+          <span class="control-dot expand"></span>
+        </div>
+        <span class="modal-title">smartsort@guide:~ $ help</span>
+        <button id="closeHelpModalBtn" class="close-btn">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="guide-section">
+          <h2 class="guide-title">🚀 User Quick Start Guide</h2>
+          <div class="steps-grid">
+            <div class="step-item">
+              <span class="step-num">1</span>
+              <div class="step-text">
+                <strong>Select Folder</strong>
+                <p>Click <code>● BROWSE FOLDER</code> to pick your Downloads, Desktop, or clutter folder.</p>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <span class="step-num">2</span>
+              <div class="step-text">
+                <strong>Inspect Space</strong>
+                <p>Click <code>● SCAN STORAGE</code> to view folder sizes or <code>● TOP FILES</code> for large files.</p>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <span class="step-num">3</span>
+              <div class="step-text">
+                <strong>Safe Simulation</strong>
+                <p>Click <code>● DRY RUN</code> to test where files will move without changing anything.</p>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <span class="step-num">4</span>
+              <div class="step-text">
+                <strong>Organize Files</strong>
+                <p>Click <code>● ORGANIZE</code> to automatically group files into Audio, Documents, Images, etc.</p>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <span class="step-num">5</span>
+              <div class="step-text">
+                <strong>Clean Up</strong>
+                <p>Click <code>● CLEAN EMPTY</code> to detect and prune empty abandoned directories.</p>
+              </div>
+            </div>
+
+            <div class="step-item">
+              <span class="step-num">6</span>
+              <div class="step-text">
+                <strong>Undo Anytime</strong>
+                <p>Click <code>● UNDO LAST</code> or type <code>undo</code> to instantly restore moved files.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h2 class="guide-title">⌨️ Terminal Commands</h2>
+          <table class="cheat-table">
+            <thead>
+              <tr>
+                <th>Command</th>
+                <th>Description</th>
+                <th>Example</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td><code>sort</code></td><td>Organize target directory</td><td><code>sort C:\Downloads</code></td></tr>
+              <tr><td><code>dry-run</code></td><td>Test run without moving files</td><td><code>dry-run C:\Downloads</code></td></tr>
+              <tr><td><code>scan</code></td><td>View storage category breakdown</td><td><code>scan</code></td></tr>
+              <tr><td><code>top-files</code></td><td>List 10 largest files</td><td><code>top-files</code></td></tr>
+              <tr><td><code>clean-empty</code></td><td>Prune empty subfolders</td><td><code>clean-empty</code></td></tr>
+              <tr><td><code>history</code></td><td>View move history log</td><td><code>history</code></td></tr>
+              <tr><td><code>undo</code></td><td>Restore last moved file(s)</td><td><code>undo</code></td></tr>
+              <tr><td><code>clear</code></td><td>Wipe log screen</td><td><code>clear</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="app.js"></script>
