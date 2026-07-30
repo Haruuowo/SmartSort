@@ -7,8 +7,8 @@ from tkinter import filedialog, END
 
 from smartsort.classifier import FileClassifier
 from smartsort.history import get_history, undo_move, init_db
-from smartsort.cleaner import remove_empty_folders, find_empty_folders
-from smartsort.analyzer import analyze_directory, format_size as fmt_size, generate_bar
+from smartsort.cleaner import remove_empty_folders
+from smartsort.analyzer import analyze_directory, format_size as fmt_size
 
 def get_config_path() -> str:
     if getattr(sys, 'frozen', False):
@@ -17,178 +17,254 @@ def get_config_path() -> str:
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, 'config', 'rules.yaml')
 
-# ── Sleek High-End Terminal Dark Theme ──
-BG           = "#0b0f19"  # Deep Obsidian Navy
-BG_CARD      = "#131b2e"  # Dark Terminal Panel
-BG_INPUT     = "#1a2438"  # Dark Input Surface
-BORDER       = "#26354f"  # Subtle Neon Border
+# ── Modern React/Electron App Color Palette ──
+BG           = "#0b0f17"  # Deep Obsidian Black
+SIDEBAR_BG   = "#0f172a"  # Slate Navy Sidebar
+CARD_BG      = "#1e293b"  # Sleek Dark Card Surface
+CARD_BORDER  = "#334155"  # Subtle Border
+INPUT_BG     = "#0f172a"
 
-TEXT_MAIN    = "#e2e8f0"  # Soft Off-White
-TEXT_MUTED   = "#64748b"  # Slate Muted Gray
+TEXT_MAIN    = "#f8fafc"  # Bright Off-White
+TEXT_MUTED   = "#94a3b8"  # Muted Slate Gray
 
-GREEN        = "#10b981"  # Emerald Accent
-GREEN_HOVER  = "#059669"
-BLUE         = "#38bdf8"  # Electric Blue Accent
+PRIMARY      = "#10b981"  # Emerald Green
+PRIMARY_HOVER= "#059669"
+BLUE         = "#38bdf8"  # Electric Blue
 BLUE_HOVER   = "#0284c7"
 AMBER        = "#f59e0b"  # Warm Amber
 RED          = "#f43f5e"  # Rose Red
 PURPLE       = "#a855f7"  # Electric Purple
 
-FONT_MONO    = ("Consolas", 12)
-FONT_MONO_SM = ("Consolas", 11)
-FONT_MONO_LG = ("Consolas", 13, "bold")
-FONT_TITLE   = ("Consolas", 18, "bold")
-
-BANNER_ASCII = r"""
-  ███████╗███╗   ███╗█████╗ ██████╗ ████████╗███████╗██████╗ ██████╗ ████████╗
-  ██╔════╝████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
-  ███████╗██╔████╔██║███████║██████╔╝   ██║   ███████╗██║  ██║██████╔╝   ██║   
-  ╚════██║██║╚██╔╝██║██╔══██║██╔══██╗   ██║   ╚════██║██║  ██║██╔══██╗   ██║   
-  ███████║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║   ███████║╚██████╔╝██║  ██║   ██║   
-  ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
-"""
+FONT_BODY    = ("Segoe UI", 12)
+FONT_BOLD    = ("Segoe UI", 12, "bold")
+FONT_SM      = ("Segoe UI", 11)
+FONT_HEADING = ("Segoe UI", 15, "bold")
+FONT_TITLE   = ("Segoe UI", 20, "bold")
+FONT_MONO    = ("Consolas", 11)
 
 
-class SmartSortTerminal(ctk.CTk):
+class SmartSortApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
         # ── Window Settings ──
-        self.title("SmartSort Terminal Engine")
-        self.geometry("900x660")
-        self.minsize(760, 520)
+        self.title("SmartSort — Desktop File Organizer")
+        self.geometry("960x640")
+        self.minsize(820, 520)
         self.configure(fg_color=BG)
         ctk.set_appearance_mode("dark")
 
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        # Grid layout: Sidebar (col 0), Main Content (col 1)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        # ── Top Header Panel ──
-        header = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
-        header.grid(row=0, column=0, sticky="ew", padx=14, pady=(14, 8))
-        header.grid_columnconfigure(1, weight=1)
+        # ── Sidebar ──
+        sidebar = ctk.CTkFrame(self, fg_color=SIDEBAR_BG, width=220, corner_radius=0, border_width=1, border_color=CARD_BORDER)
+        sidebar.grid(row=0, column=0, sticky="nsew")
+        sidebar.grid_rowconfigure(4, weight=1)
 
-        # Title & Status Badge
-        title_box = ctk.CTkFrame(header, fg_color="transparent")
-        title_box.grid(row=0, column=0, padx=16, pady=12, sticky="w")
+        # Brand Title
+        brand_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
+        brand_frame.pack(padx=16, pady=24, fill="x")
 
         ctk.CTkLabel(
-            title_box, text="# SMARTSORT",
-            font=FONT_TITLE, text_color=GREEN
+            brand_frame, text="⚡ SmartSort",
+            font=FONT_TITLE, text_color=TEXT_MAIN
         ).pack(anchor="w")
 
-        status_box = ctk.CTkFrame(title_box, fg_color="transparent")
-        status_box.pack(anchor="w", pady=(2, 0))
+        ctk.CTkLabel(
+            brand_frame, text="v1.2.0 Desktop Engine",
+            font=FONT_SM, text_color=PRIMARY
+        ).pack(anchor="w", pady=(2, 0))
+
+        # Navigation Buttons
+        self.btn_nav_dashboard = ctk.CTkButton(
+            sidebar, text="  ❖  Dashboard", font=FONT_BOLD, height=38,
+            fg_color=CARD_BG, text_color=PRIMARY, hover_color=CARD_BORDER,
+            anchor="w", corner_radius=8, command=lambda: self.switch_tab("dashboard")
+        )
+        self.btn_nav_dashboard.pack(padx=12, pady=4, fill="x")
+
+        self.btn_nav_analyzer = ctk.CTkButton(
+            sidebar, text="  📊  Storage Analyzer", font=FONT_BOLD, height=38,
+            fg_color="transparent", text_color=TEXT_MUTED, hover_color=CARD_BG,
+            anchor="w", corner_radius=8, command=lambda: self.switch_tab("analyzer")
+        )
+        self.btn_nav_analyzer.pack(padx=12, pady=4, fill="x")
+
+        self.btn_nav_history = ctk.CTkButton(
+            sidebar, text="  🕒  Move History", font=FONT_BOLD, height=38,
+            fg_color="transparent", text_color=TEXT_MUTED, hover_color=CARD_BG,
+            anchor="w", corner_radius=8, command=lambda: self.switch_tab("history")
+        )
+        self.btn_nav_history.pack(padx=12, pady=4, fill="x")
+
+        # Sidebar Footer Status
+        footer = ctk.CTkFrame(sidebar, fg_color="transparent")
+        footer.pack(side="bottom", padx=16, pady=16)
 
         ctk.CTkLabel(
-            status_box, text="● READY",
-            font=FONT_MONO_SM, text_color=GREEN
-        ).pack(side="left")
+            footer, text="● System Online",
+            font=FONT_SM, text_color=PRIMARY
+        ).pack(anchor="w")
 
-        ctk.CTkLabel(
-            status_box, text=" | v1.2.0 Terminal Engine",
-            font=FONT_MONO_SM, text_color=TEXT_MUTED
-        ).pack(side="left")
+        # ── Main Content Container ──
+        self.main_container = ctk.CTkFrame(self, fg_color=BG, corner_radius=0)
+        self.main_container.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        self.main_container.grid_columnconfigure(0, weight=1)
+        self.main_container.grid_rowconfigure(2, weight=1)
 
-        # Target Folder Input Box
+        # ── Top Folder Selector Card ──
+        header_card = ctk.CTkFrame(self.main_container, fg_color=CARD_BG, corner_radius=12, border_width=1, border_color=CARD_BORDER)
+        header_card.grid(row=0, column=0, sticky="ew", pady=(0, 16))
+        header_card.grid_columnconfigure(0, weight=1)
+
         self.folder_var = ctk.StringVar(value="")
         self.folder_entry = ctk.CTkEntry(
-            header, textvariable=self.folder_var,
-            placeholder_text="Select target folder (click Browse Folder or type path)...",
-            font=FONT_MONO_SM, height=36,
-            fg_color=BG_INPUT, border_color=BORDER, border_width=1,
+            header_card, textvariable=self.folder_var,
+            placeholder_text="Select target folder to organize...",
+            font=FONT_BODY, height=40,
+            fg_color=INPUT_BG, border_color=CARD_BORDER, border_width=1,
             text_color=BLUE, placeholder_text_color=TEXT_MUTED,
-            corner_radius=6
+            corner_radius=8
         )
-        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=12)
+        self.folder_entry.grid(row=0, column=0, sticky="ew", padx=16, pady=14)
 
-        # Browse Folder Button
         ctk.CTkButton(
-            header, text="[ Browse Folder ]", width=140, height=36,
-            font=FONT_MONO_SM, fg_color=GREEN, hover_color=GREEN_HOVER,
-            text_color="#ffffff", corner_radius=6,
+            header_card, text="📁 Browse Folder", width=140, height=40,
+            font=FONT_BOLD, fg_color=BLUE, hover_color=BLUE_HOVER,
+            text_color="#ffffff", corner_radius=8,
             command=self.browse_folder
-        ).grid(row=0, column=2, padx=(0, 16), pady=12)
+        ).grid(row=0, column=1, padx=(0, 16), pady=14)
 
-        # ── Toolbar: Styled Action Buttons ──
-        toolbar = ctk.CTkFrame(self, fg_color=BG, corner_radius=0)
-        toolbar.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 8))
+        # ── Dashboard Tab View ──
+        self.tab_dashboard = ctk.CTkFrame(self.main_container, fg_color="transparent")
+        self.tab_dashboard.grid(row=1, column=0, rowspan=2, sticky="nsew")
+        self.tab_dashboard.grid_columnconfigure(0, weight=1)
+        self.tab_dashboard.grid_rowconfigure(2, weight=1)
 
-        actions = [
-            ("[ Organize ]", GREEN, GREEN_HOVER, "#ffffff", lambda: self.run_sort(False)),
-            ("[ Dry Run ]", BG_CARD, BORDER, BLUE, lambda: self.run_sort(True)),
-            ("[ Scan ]", BG_CARD, BORDER, BLUE, self.cmd_scan),
-            ("[ Top Files ]", BG_CARD, BORDER, BLUE, self.cmd_top_files),
-            ("[ Clean Empty ]", BG_CARD, BORDER, AMBER, self.cmd_clean_empty),
-            ("[ Undo Last ]", BG_CARD, BORDER, PURPLE, self.undo_last),
-            ("[ History ]", BG_CARD, BORDER, TEXT_MUTED, self.show_history),
-            ("[ Clear ]", BG_CARD, BORDER, TEXT_MUTED, self.clear_terminal),
-            ("[ Help ]", BG_CARD, BORDER, TEXT_MAIN, self.show_help),
-        ]
+        # Stats Summary Cards Row
+        stats_row = ctk.CTkFrame(self.tab_dashboard, fg_color="transparent")
+        stats_row.grid(row=0, column=0, sticky="ew", pady=(0, 16))
+        stats_row.grid_columnconfigure((0, 1, 2, 3), weight=1, uniform="stat")
 
-        for text, bg, hover, fg, cmd in actions:
-            btn = ctk.CTkButton(
-                toolbar, text=text, width=92, height=32,
-                font=FONT_MONO_SM, fg_color=bg, hover_color=hover,
-                border_color=BORDER, border_width=1, corner_radius=6,
-                text_color=fg, command=cmd
-            )
-            btn.pack(side="left", padx=2)
+        self.card_files = self._create_stat_card(stats_row, 0, "Total Files", "0", "📁", BLUE)
+        self.card_size  = self._create_stat_card(stats_row, 1, "Storage Used", "0 MB", "💾", PRIMARY)
+        self.card_cats  = self._create_stat_card(stats_row, 2, "Categories", "0", "🏷️", PURPLE)
+        self.card_dups  = self._create_stat_card(stats_row, 3, "Duplicates", "0", "⚠️", AMBER)
 
-        # ── Terminal Output Screen ──
-        terminal_frame = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
-        terminal_frame.grid(row=2, column=0, sticky="nsew", padx=14, pady=0)
-        terminal_frame.grid_columnconfigure(0, weight=1)
-        terminal_frame.grid_rowconfigure(0, weight=1)
+        # Action Buttons Toolbar
+        action_card = ctk.CTkFrame(self.tab_dashboard, fg_color=CARD_BG, corner_radius=12, border_width=1, border_color=CARD_BORDER)
+        action_card.grid(row=1, column=0, sticky="ew", pady=(0, 16))
 
-        self.terminal = ctk.CTkTextbox(
-            terminal_frame, font=FONT_MONO,
-            fg_color=BG_CARD, text_color=TEXT_MAIN,
-            border_width=0, corner_radius=8, wrap="word",
-            activate_scrollbars=True,
-            scrollbar_button_color=BORDER,
-            scrollbar_button_hover_color=TEXT_MUTED
-        )
-        self.terminal.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        self.terminal.configure(state="disabled")
+        action_inner = ctk.CTkFrame(action_card, fg_color="transparent")
+        action_inner.pack(padx=16, pady=12, fill="x")
 
-        # ── Command Prompt Bar ──
-        prompt_bar = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
-        prompt_bar.grid(row=3, column=0, sticky="ew", padx=14, pady=12)
-        prompt_bar.grid_columnconfigure(1, weight=1)
+        ctk.CTkButton(
+            action_inner, text="⚡ Organize Now", width=140, height=38,
+            font=FONT_BOLD, fg_color=PRIMARY, hover_color=PRIMARY_HOVER,
+            text_color="#ffffff", corner_radius=8,
+            command=lambda: self.run_sort(False)
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            action_inner, text="🔍 Dry Run", width=110, height=38,
+            font=FONT_BOLD, fg_color=INPUT_BG, hover_color=CARD_BORDER,
+            text_color=BLUE, border_width=1, border_color=CARD_BORDER, corner_radius=8,
+            command=lambda: self.run_sort(True)
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            action_inner, text="📊 Scan Storage", width=120, height=38,
+            font=FONT_BOLD, fg_color=INPUT_BG, hover_color=CARD_BORDER,
+            text_color=BLUE, border_width=1, border_color=CARD_BORDER, corner_radius=8,
+            command=self.cmd_scan
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            action_inner, text="🧹 Clean Empty", width=120, height=38,
+            font=FONT_BOLD, fg_color=INPUT_BG, hover_color=CARD_BORDER,
+            text_color=AMBER, border_width=1, border_color=CARD_BORDER, corner_radius=8,
+            command=self.cmd_clean_empty
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            action_inner, text="↩ Undo Last", width=110, height=38,
+            font=FONT_BOLD, fg_color=INPUT_BG, hover_color=CARD_BORDER,
+            text_color=PURPLE, border_width=1, border_color=CARD_BORDER, corner_radius=8,
+            command=self.undo_last
+        ).pack(side="left", padx=4)
+
+        ctk.CTkButton(
+            action_inner, text="🗑 Clear Log", width=100, height=38,
+            font=FONT_BODY, fg_color="transparent", hover_color=INPUT_BG,
+            text_color=TEXT_MUTED, corner_radius=8,
+            command=self.clear_terminal
+        ).pack(side="right", padx=4)
+
+        # Activity Log Card Window
+        log_card = ctk.CTkFrame(self.tab_dashboard, fg_color=CARD_BG, corner_radius=12, border_width=1, border_color=CARD_BORDER)
+        log_card.grid(row=2, column=0, sticky="nsew")
+        log_card.grid_columnconfigure(0, weight=1)
+        log_card.grid_rowconfigure(1, weight=1)
+
+        log_header = ctk.CTkFrame(log_card, fg_color="transparent")
+        log_header.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 6))
 
         ctk.CTkLabel(
-            prompt_bar, text="smartsort $",
-            font=FONT_MONO_LG, text_color=GREEN
-        ).grid(row=0, column=0, padx=(14, 6), pady=8)
+            log_header, text="Activity Log & Console Stream",
+            font=FONT_HEADING, text_color=TEXT_MAIN
+        ).pack(side="left")
 
-        self.cmd_input = ctk.CTkEntry(
-            prompt_bar, font=FONT_MONO, fg_color=BG_CARD, text_color=TEXT_MAIN,
-            border_width=0, corner_radius=0,
-            placeholder_text="type command (sort, scan, top-files, dry-run, clean-empty, ls, history, undo, help)...",
-            placeholder_text_color=TEXT_MUTED
+        self.terminal = ctk.CTkTextbox(
+            log_card, font=FONT_MONO,
+            fg_color=INPUT_BG, text_color=TEXT_MAIN,
+            border_width=1, border_color=CARD_BORDER, corner_radius=8, wrap="word",
+            activate_scrollbars=True
         )
-        self.cmd_input.grid(row=0, column=1, sticky="ew", pady=8)
-        self.cmd_input.bind("<Return>", self._on_enter)
+        self.terminal.grid(row=1, column=0, sticky="nsew", padx=16, pady=(0, 16))
+        self.terminal.configure(state="disabled")
 
-        # Print initial banner
-        self.print_banner()
+        # Initial Welcome Log
+        self._print("SmartSort Engine Ready. Select a folder and click [ Organize Now ] to begin.", PRIMARY)
 
-    def print_banner(self):
-        self._print(BANNER_ASCII, GREEN)
-        self._print("  ┌── QUICK START ─────────────────────────────────────────────────────────────┐", BLUE)
-        self._print("  │ 1. Click [ Browse Folder ] to choose target directory                      │", TEXT_MAIN)
-        self._print("  │ 2. Click [ Scan ] or [ Top Files ] to inspect directory storage            │", TEXT_MAIN)
-        self._print("  │ 3. Click [ Dry Run ] to preview, or [ Organize ] to organize files         │", TEXT_MAIN)
-        self._print("  │ 4. Type 'help' at the prompt for interactive terminal commands             │", TEXT_MAIN)
-        self._print("  └────────────────────────────────────────────────────────────────────────────┘\n", BLUE)
+    def _create_stat_card(self, parent, col, title, value, icon, color):
+        card = ctk.CTkFrame(parent, fg_color=CARD_BG, corner_radius=12, border_width=1, border_color=CARD_BORDER)
+        card.grid(row=0, column=col, sticky="ew", padx=4)
+
+        inner = ctk.CTkFrame(card, fg_color="transparent")
+        inner.pack(padx=16, pady=14, fill="x")
+
+        top = ctk.CTkFrame(inner, fg_color="transparent")
+        top.pack(fill="x")
+
+        ctk.CTkLabel(top, text=title.upper(), font=FONT_SM, text_color=TEXT_MUTED).pack(side="left")
+        ctk.CTkLabel(top, text=icon, font=FONT_HEADING).pack(side="right")
+
+        val_label = ctk.CTkLabel(inner, text=value, font=FONT_TITLE, text_color=color)
+        val_label.pack(anchor="w", pady=(6, 0))
+        return val_label
+
+    def switch_tab(self, tab_name):
+        # Update Nav styles
+        self.btn_nav_dashboard.configure(fg_color=CARD_BG if tab_name == "dashboard" else "transparent", text_color=PRIMARY if tab_name == "dashboard" else TEXT_MUTED)
+        self.btn_nav_analyzer.configure(fg_color=CARD_BG if tab_name == "analyzer" else "transparent", text_color=BLUE if tab_name == "analyzer" else TEXT_MUTED)
+        self.btn_nav_history.configure(fg_color=CARD_BG if tab_name == "history" else "transparent", text_color=PURPLE if tab_name == "history" else TEXT_MUTED)
+
+        if tab_name == "dashboard":
+            self.tab_dashboard.lift()
+        elif tab_name == "analyzer":
+            self.cmd_scan()
+        elif tab_name == "history":
+            self.show_history()
 
     # ── Output Helpers ──
     def _print(self, text: str, color: str = TEXT_MAIN):
         self.terminal.configure(state="normal")
+        timestamp = datetime.now().strftime("%H:%M:%S")
         tag = f"t{id(text)}_{os.urandom(4).hex()}"
         start = self.terminal.index("end-1c")
-        self.terminal.insert(END, text + "\n")
+        self.terminal.insert(END, f"[{timestamp}] {text}\n")
         end = self.terminal.index("end-1c")
         self.terminal.tag_add(tag, start, end)
         self.terminal.tag_config(tag, foreground=color)
@@ -199,200 +275,52 @@ class SmartSortTerminal(ctk.CTk):
         self.terminal.configure(state="normal")
         self.terminal.delete("1.0", END)
         self.terminal.configure(state="disabled")
-        self.print_banner()
 
-    # ── Folder Picker ──
     def browse_folder(self):
         folder = filedialog.askdirectory(title="Select Folder to Organize")
         if folder:
             self.folder_var.set(folder)
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            self._print(f"\n[{timestamp}] [+] Target directory set: {folder}", BLUE)
-            self._print(f"[{timestamp}]     Ready! Click [ Scan ], [ Dry Run ], or [ Organize ].", TEXT_MUTED)
+            self._print(f"Target directory set: {folder}", BLUE)
+            self.cmd_scan()
 
-    # ── Command Prompt Dispatch ──
-    def _on_enter(self, event):
-        raw = self.cmd_input.get().strip()
-        self.cmd_input.delete(0, END)
-        if not raw:
-            return
-
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] smartsort $ {raw}", GREEN)
-
-        parts = raw.split(maxsplit=1)
-        cmd = parts[0].lower()
-        arg = parts[1].strip() if len(parts) > 1 else ""
-
-        if cmd in ("help", "?"):
-            self.show_help()
-        elif cmd in ("scan", "analyze"):
-            self.cmd_scan(arg)
-        elif cmd in ("top-files", "topfiles", "largest"):
-            self.cmd_top_files(arg)
-        elif cmd in ("sort", "run", "organize"):
-            self.run_sort(dry_run=False, path_override=arg)
-        elif cmd in ("dry-run", "dryrun", "sim"):
-            self.run_sort(dry_run=True, path_override=arg)
-        elif cmd in ("browse", "select"):
-            self.browse_folder()
-        elif cmd in ("clean-empty", "cleanempty", "clean", "rmdir"):
-            self.cmd_clean_empty(arg)
-        elif cmd == "ls":
-            self._cmd_ls(arg)
-        elif cmd == "history":
-            self.show_history()
-        elif cmd == "undo":
-            self.undo_last(arg)
-        elif cmd in ("clear", "cls"):
-            self.clear_terminal()
-        elif cmd == "pwd":
-            self._print(os.getcwd(), BLUE)
-        elif cmd in ("exit", "quit"):
-            self.destroy()
-        else:
-            self._print(f"[-] Unknown command '{cmd}'. Type 'help' for available commands.", RED)
-
-    def show_help(self):
-        help_text = """
-======================= COMMAND REFERENCE =======================
-  scan [path]        Directory category & size breakdown
-  top-files [path]   Show 10 largest files in directory
-  sort [path]        Organize files in directory
-  dry-run [path]     Simulate sort without moving files
-  clean-empty [path] Detect and remove empty subfolders
-  browse             Open Windows folder picker dialog
-  ls [path]          List files in current or target directory
-  history            Show recent move history
-  undo [all]         Undo last move (or 'undo all' to revert all)
-  clear              Clear terminal log screen
-  pwd                Print current working directory
-  exit               Exit SmartSort Terminal
-=================================================================
-"""
-        self._print(help_text, AMBER)
-
-    def cmd_scan(self, path_override: str = ""):
-        folder = path_override if path_override else self.folder_var.get()
+    def cmd_scan(self):
+        folder = self.folder_var.get()
         if not folder or not os.path.isdir(folder):
-            folder = filedialog.askdirectory(title="Select Folder to Scan")
-            if not folder:
-                self._print("[-] No folder selected.", RED)
-                return
-            self.folder_var.set(folder)
+            return
 
         config_path = get_config_path()
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] [*] Scanning folder (Storage Breakdown): {folder}", BLUE)
-        self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
-
         summary = analyze_directory(folder, config_path)
-        total_size = summary['total_size']
-        total_files = summary['total_files']
+        
+        self.card_files.configure(text=str(summary['total_files']))
+        self.card_size.configure(text=fmt_size(summary['total_size']))
+        self.card_cats.configure(text=str(len(summary['categories'])))
 
-        if total_files == 0:
-            self._print("[!] Folder is empty.", AMBER)
-            return
+        self._print(f"Storage scan complete for {folder}: {summary['total_files']} files ({fmt_size(summary['total_size'])}).", PRIMARY)
 
-        self._print(f"Total Folder Size: {fmt_size(total_size)} ({total_files} files)\n", GREEN)
-        self._print(f"  {'CATEGORY':<18} {'FILES':<8} {'SIZE':<10} {'% SIZE':<8} VISUAL DISTRIBUTION", TEXT_MUTED)
-        self._print(f"  {'─'*18} {'─'*8} {'─'*10} {'─'*8} {'─'*22}", TEXT_MUTED)
-
-        sorted_cats = sorted(summary['categories'].items(), key=lambda x: x[1]['size'], reverse=True)
-        for cat, data in sorted_cats:
-            count = data['count']
-            size = data['size']
-            pct = (size / total_size * 100.0) if total_size > 0 else 0.0
-            bar = generate_bar(pct, width=16)
-            self._print(f"  {cat:<18} {count:<8} {fmt_size(size):<10} {pct:5.1f}%   [{bar}]", TEXT_MAIN)
-
-        self._print("────────────────────────────────────────────────────────────────\n", TEXT_MUTED)
-
-    def cmd_top_files(self, path_override: str = ""):
-        folder = path_override if path_override else self.folder_var.get()
+    def cmd_clean_empty(self):
+        folder = self.folder_var.get()
         if not folder or not os.path.isdir(folder):
-            folder = filedialog.askdirectory(title="Select Folder to Find Largest Files")
-            if not folder:
-                self._print("[-] No folder selected.", RED)
-                return
-            self.folder_var.set(folder)
-
-        config_path = get_config_path()
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] [*] Top 10 Largest Files in: {folder}", BLUE)
-        self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
-
-        summary = analyze_directory(folder, config_path)
-        top_files = summary['top_files']
-
-        if not top_files:
-            self._print("[!] No files found.", AMBER)
+            self._print("Please select a target folder first.", RED)
             return
 
-        for i, item in enumerate(top_files, 1):
-            name = item['name']
-            size_str = fmt_size(item['size'])
-            cat = item['category']
-            self._print(f"  #{i:<2} {size_str:<10}  {name}  --> ({cat})", TEXT_MAIN)
-
-        self._print("────────────────────────────────────────────────────────────────\n", TEXT_MUTED)
-
-    def _cmd_ls(self, path):
-        target = path if path else (self.folder_var.get() or os.getcwd())
-        if not os.path.isdir(target):
-            self._print(f"[-] Directory not found: '{target}'", RED)
-            return
-        try:
-            entries = sorted(os.listdir(target))
-            self._print(f"Listing contents of {target}:", BLUE)
-            for e in entries:
-                full = os.path.join(target, e)
-                if os.path.isdir(full):
-                    self._print(f"  [DIR]  {e}/", BLUE)
-                else:
-                    size = os.path.getsize(full)
-                    self._print(f"  [FILE] {e} ({self._format_size(size)})", TEXT_MAIN)
-        except PermissionError:
-            self._print("[-] Permission denied.", RED)
-
-    def cmd_clean_empty(self, path_override: str = ""):
-        folder = path_override if path_override else self.folder_var.get()
-        if not folder or not os.path.isdir(folder):
-            folder = filedialog.askdirectory(title="Select Folder to Clean Empty Subfolders")
-            if not folder:
-                self._print("[-] No folder selected.", RED)
-                return
-            self.folder_var.set(folder)
-
-        timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] [*] Scanning for empty subdirectories in: {folder}", BLUE)
         removed = remove_empty_folders(folder, dry_run=False)
-
         if not removed:
-            self._print(f"[{timestamp}] [!] No empty subdirectories found.", AMBER)
+            self._print("No empty subfolders found.", AMBER)
         else:
-            for d in removed:
-                self._print(f"  [REMOVED] Empty folder: {d}", RED)
-            self._print(f"[{timestamp}] [+] Cleaned {len(removed)} empty subfolder(s).\n", GREEN)
+            self._print(f"Cleaned {len(removed)} empty subfolder(s).", PRIMARY)
 
-    def run_sort(self, dry_run: bool, path_override: str = ""):
-        folder = path_override if path_override else self.folder_var.get()
+    def run_sort(self, dry_run: bool):
+        folder = self.folder_var.get()
         if not folder or not os.path.isdir(folder):
             folder = filedialog.askdirectory(title="Select Folder to Organize")
             if not folder:
-                self._print("[-] Please select a valid folder.", RED)
+                self._print("Please select a valid folder.", RED)
                 return
             self.folder_var.set(folder)
 
         config_path = get_config_path()
-        if not os.path.exists(config_path):
-            self._print(f"[-] Config file missing at: {config_path}", RED)
-            return
-
-        timestamp = datetime.now().strftime("%H:%M:%S")
         mode = "DRY RUN SIMULATION" if dry_run else "EXECUTING SORT"
-        self._print(f"\n[{timestamp}] [*] Starting [{mode}] on: {folder}", AMBER if dry_run else GREEN)
-        self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
+        self._print(f"Starting [{mode}] on: {folder}", AMBER if dry_run else PRIMARY)
 
         threading.Thread(
             target=self._sort_worker, args=(folder, config_path, dry_run),
@@ -404,11 +332,11 @@ class SmartSortTerminal(ctk.CTk):
         try:
             files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
         except Exception as e:
-            self.after(0, lambda: self._print(f"[-] Error accessing folder: {e}", RED))
+            self.after(0, lambda: self._print(f"Error accessing folder: {e}", RED))
             return
 
         if not files:
-            self.after(0, lambda: self._print("[!] No files found to organize.", AMBER))
+            self.after(0, lambda: self._print("No files found to organize.", AMBER))
             return
 
         moved, duplicates, errors = 0, 0, 0
@@ -420,25 +348,20 @@ class SmartSortTerminal(ctk.CTk):
             if status == "moved":
                 moved += 1
                 dest = os.path.basename(result.get("destination", ""))
-                self.after(0, lambda i=item, d=dest: self._print(f"  [MOVED]     {i}  ──>  {d}", GREEN))
+                self.after(0, lambda i=item, d=dest: self._print(f"MOVED: {i}  ──>  {d}", PRIMARY))
             elif status == "duplicate":
                 duplicates += 1
                 dest = os.path.join("Duplicates", os.path.basename(result.get("destination", "")))
-                self.after(0, lambda i=item, d=dest: self._print(f"  [DUPLICATE] {i}  ──>  {d}", AMBER))
+                self.after(0, lambda i=item, d=dest: self._print(f"DUPLICATE: {i}  ──>  {d}", AMBER))
             else:
                 errors += 1
                 r = result.get("reason", "Unknown")
-                self.after(0, lambda i=item, r=r: self._print(f"  [ERROR]     {i}  ({r})", RED))
-
-        total = len(files)
+                self.after(0, lambda i=item, r=r: self._print(f"ERROR: {i} ({r})", RED))
 
         def finish():
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
-            self._print(
-                f"[{timestamp}] [+] Complete! Moved: {moved} | Duplicates: {duplicates} | Errors: {errors} | Total: {total}\n",
-                GREEN if errors == 0 else AMBER
-            )
+            self.card_dups.configure(text=str(duplicates))
+            self._print(f"Complete! Moved: {moved} | Duplicates: {duplicates} | Errors: {errors}", PRIMARY if errors == 0 else AMBER)
+            self.cmd_scan()
 
         self.after(0, finish)
 
@@ -446,46 +369,37 @@ class SmartSortTerminal(ctk.CTk):
         try:
             records = get_history(15)
         except Exception as e:
-            self._print(f"[-] History error: {e}", RED)
+            self._print(f"History error: {e}", RED)
             return
 
         if not records:
-            self._print("[!] No move history recorded.", AMBER)
+            self._print("No move history recorded.", AMBER)
             return
 
-        self._print("\n=== RECENT MOVE HISTORY ===", PURPLE)
+        self._print("=== RECENT MOVE HISTORY ===", PURPLE)
         for r in records:
-            self._print(f"  #{r[0]} | {os.path.basename(r[1])} ──> {os.path.basename(r[2])} [{r[3]}]", TEXT_MAIN)
-        self._print("===========================\n", PURPLE)
+            self._print(f"#{r[0]} | {os.path.basename(r[1])} ──> {os.path.basename(r[2])} [{r[3]}]", TEXT_MAIN)
 
-    def undo_last(self, arg: str = ""):
+    def undo_last(self):
         try:
-            records = get_history(None if arg.lower() == "all" else 1)
+            records = get_history(1)
         except Exception as e:
-            self._print(f"[-] Undo error: {e}", RED)
+            self._print(f"Undo error: {e}", RED)
             return
 
         if not records:
-            self._print("[!] Nothing to undo.", AMBER)
+            self._print("Nothing to undo.", AMBER)
             return
 
         for record in records:
             name = os.path.basename(record[1])
             if undo_move(record):
-                self._print(f"  [UNDONE] Restored: {name}", GREEN)
+                self._print(f"Restored: {name}", PRIMARY)
             else:
-                self._print(f"  [FAILED] Could not restore: {name}", RED)
-
-    @staticmethod
-    def _format_size(b: int) -> str:
-        for unit in ['B', 'KB', 'MB', 'GB']:
-            if b < 1024:
-                return f"{b:.1f} {unit}"
-            b /= 1024
-        return f"{b:.1f} TB"
+                self._print(f"Could not restore: {name}", RED)
 
 
 if __name__ == "__main__":
     init_db()
-    app = SmartSortTerminal()
+    app = SmartSortApp()
     app.mainloop()
