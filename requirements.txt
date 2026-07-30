@@ -1,0 +1,7 @@
+watchdog
+typer
+rich
+pyyaml
+filetype
+Pillow
+pytest

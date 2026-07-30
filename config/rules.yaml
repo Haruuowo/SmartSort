@@ -1,0 +1,41 @@
+rules:
+  - name: "Receipts & Invoices"
+    condition:
+      name_contains: ["receipt", "invoice", "bill"]
+    destination: "Finance/Receipts"
+
+  - name: "Screenshots"
+    condition:
+      name_contains: ["screenshot", "screen_shot"]
+    destination: "Images/Screenshots"
+
+  - name: "Photos with EXIF"
+    condition:
+      extensions: [".png", ".jpg", ".jpeg"]
+      has_exif_date: true
+    destination: "Photos/{year}/{month}"
+
+  - name: "Images"
+    condition:
+      extensions: [".png", ".jpg", ".jpeg", ".gif", ".webp"]
+    destination: "Images/Other"
+
+  - name: "Documents"
+    condition:
+      extensions: [".pdf", ".doc", ".docx", ".txt", ".csv", ".xlsx"]
+    destination: "Documents"
+
+  - name: "Code"
+    condition:
+      extensions: [".py", ".js", ".html", ".css", ".json", ".java", ".cpp"]
+    destination: "Code"
+
+  - name: "Archives"
+    condition:
+      extensions: [".zip", ".rar", ".tar", ".gz", ".7z"]
+    destination: "Archives"
+
+  - name: "Videos"
+    condition:
+      extensions: [".mp4", ".mkv", ".avi", ".mov"]
+    destination: "Videos"
