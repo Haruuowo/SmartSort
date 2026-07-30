@@ -6,6 +6,7 @@ from tkinter import filedialog, END
 
 from smartsort.classifier import FileClassifier
 from smartsort.history import get_history, undo_move, init_db
+from smartsort.cleaner import remove_empty_folders, find_empty_folders
 
 def get_config_path() -> str:
     if getattr(sys, 'frozen', False):
@@ -84,6 +85,7 @@ class SmartSortTerminal(ctk.CTk):
         buttons = [
             ("⚡ Dry Run", BG_INPUT, CYAN, lambda: self.run_sort(True)),
             ("🚀 Organize", BG_INPUT, GREEN, lambda: self.run_sort(False)),
+            ("🗑️ Clean Empty", BG_INPUT, RED, self.cmd_clean_empty),
             ("↩ Undo Last", BG_INPUT, YELLOW, self.undo_last),
             ("📋 History", BG_INPUT, PURPLE, self.show_history),
             ("🧹 Clear", BG_INPUT, GRAY, self.clear_terminal),
@@ -91,11 +93,11 @@ class SmartSortTerminal(ctk.CTk):
         ]
         for text, bg, fg, cmd in buttons:
             ctk.CTkButton(
-                actions_bar, text=text, width=105, height=30,
+                actions_bar, text=text, width=95, height=30,
                 font=FONT_MONO_SM, fg_color=bg, hover_color="#30363d",
                 border_color="#30363d", border_width=1, corner_radius=4,
                 text_color=fg, command=cmd
-            ).pack(side="left", padx=3)
+            ).pack(side="left", padx=2)
 
         # ── Terminal Output Screen ──
         output_frame = ctk.CTkFrame(self, fg_color=BG_SECONDARY, corner_radius=6, border_width=1, border_color="#30363d")
@@ -193,6 +195,8 @@ class SmartSortTerminal(ctk.CTk):
             self.run_sort(dry_run=True, path_override=arg)
         elif cmd in ("browse", "select"):
             self.browse_folder()
+        elif cmd in ("clean-empty", "cleanempty", "clean", "rmdir"):
+            self.cmd_clean_empty(arg)
         elif cmd == "ls":
             self._cmd_ls(arg)
         elif cmd == "history":
@@ -213,6 +217,7 @@ class SmartSortTerminal(ctk.CTk):
 --------------------- COMMANDS MENU ---------------------
   sort [path]       Organize all files in directory
   dry-run [path]    Simulate sort without moving files
+  clean-empty [path] Detect and remove empty subfolders
   browse            Open Windows folder picker dialog
   ls [path]         List files in current or target folder
   history           Show history of recent file moves
@@ -224,6 +229,25 @@ class SmartSortTerminal(ctk.CTk):
 ---------------------------------------------------------
 """
         self._print(help_text, YELLOW)
+
+    def cmd_clean_empty(self, path_override: str = ""):
+        folder = path_override if path_override else self.folder_var.get()
+        if not folder or not os.path.isdir(folder):
+            folder = filedialog.askdirectory(title="Select Folder to Clean Empty Subfolders")
+            if not folder:
+                self._print("[-] Please select a valid folder.", RED)
+                return
+            self.folder_var.set(folder)
+
+        self._print(f"\n[*] Scanning for empty subfolders in: {folder}", CYAN)
+        removed = remove_empty_folders(folder, dry_run=False)
+
+        if not removed:
+            self._print("[!] No empty subfolders found.", YELLOW)
+        else:
+            for d in removed:
+                self._print(f"  [REMOVED] Empty folder: {d}", RED)
+            self._print(f"[✓] Removed {len(removed)} empty subfolder(s).\n", GREEN)
 
     def _cmd_ls(self, path):
         target = path if path else (self.folder_var.get() or os.getcwd())
