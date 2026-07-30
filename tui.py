@@ -8,6 +8,7 @@ from tkinter import filedialog, END
 from smartsort.classifier import FileClassifier
 from smartsort.history import get_history, undo_move, init_db
 from smartsort.cleaner import remove_empty_folders, find_empty_folders
+from smartsort.analyzer import analyze_directory, format_size as fmt_size, generate_bar
 
 def get_config_path() -> str:
     if getattr(sys, 'frozen', False):
@@ -105,6 +106,8 @@ class SmartSortTerminal(ctk.CTk):
         toolbar.grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 6))
 
         actions = [
+            ("[ Scan ]", BG_CARD, BLUE, self.cmd_scan),
+            ("[ Top Files ]", BG_CARD, BLUE, self.cmd_top_files),
             ("[ Dry Run ]", BG_CARD, BLUE, lambda: self.run_sort(True)),
             ("[ Organize ]", GREEN, "#ffffff", lambda: self.run_sort(False)),
             ("[ Clean Empty ]", BG_CARD, AMBER, self.cmd_clean_empty),
@@ -117,7 +120,7 @@ class SmartSortTerminal(ctk.CTk):
         for text, bg, fg, cmd in actions:
             hover = GREEN_HOVER if bg == GREEN else BORDER
             btn = ctk.CTkButton(
-                toolbar, text=text, width=100, height=30,
+                toolbar, text=text, width=90, height=30,
                 font=FONT_MONO_SM, fg_color=bg, hover_color=hover,
                 border_color=BORDER, border_width=1, corner_radius=4,
                 text_color=fg, command=cmd
@@ -210,6 +213,10 @@ class SmartSortTerminal(ctk.CTk):
 
         if cmd in ("help", "?"):
             self.show_help()
+        elif cmd in ("scan", "analyze"):
+            self.cmd_scan(arg)
+        elif cmd in ("top-files", "topfiles", "largest"):
+            self.cmd_top_files(arg)
         elif cmd in ("sort", "run", "organize"):
             self.run_sort(dry_run=False, path_override=arg)
         elif cmd in ("dry-run", "dryrun", "sim"):
@@ -236,6 +243,8 @@ class SmartSortTerminal(ctk.CTk):
     def show_help(self):
         help_text = """
 ======================= COMMAND REFERENCE =======================
+  scan [path]        WizTree-style category & size breakdown
+  top-files [path]   Show 10 largest files in directory
   sort [path]        Organize files in directory
   dry-run [path]     Simulate sort without moving files
   clean-empty [path] Detect and remove empty subfolders
@@ -249,6 +258,71 @@ class SmartSortTerminal(ctk.CTk):
 =================================================================
 """
         self._print(help_text, AMBER)
+
+    def cmd_scan(self, path_override: str = ""):
+        folder = path_override if path_override else self.folder_var.get()
+        if not folder or not os.path.isdir(folder):
+            folder = filedialog.askdirectory(title="Select Folder to Scan")
+            if not folder:
+                self._print("[-] No folder selected.", RED)
+                return
+            self.folder_var.set(folder)
+
+        config_path = get_config_path()
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self._print(f"\n[{timestamp}] [*] Scanning folder (WizTree Breakdown): {folder}", BLUE)
+        self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
+
+        summary = analyze_directory(folder, config_path)
+        total_size = summary['total_size']
+        total_files = summary['total_files']
+
+        if total_files == 0:
+            self._print("[!] Folder is empty.", AMBER)
+            return
+
+        self._print(f"Total Folder Size: {fmt_size(total_size)} ({total_files} files)\n", GREEN)
+        self._print(f"  {'CATEGORY':<18} {'FILES':<8} {'SIZE':<10} {'% SIZE':<8} VISUAL DISTRIBUTION", TEXT_MUTED)
+        self._print(f"  {'─'*18} {'─'*8} {'─'*10} {'─'*8} {'─'*22}", TEXT_MUTED)
+
+        sorted_cats = sorted(summary['categories'].items(), key=lambda x: x[1]['size'], reverse=True)
+        for cat, data in sorted_cats:
+            count = data['count']
+            size = data['size']
+            pct = (size / total_size * 100.0) if total_size > 0 else 0.0
+            bar = generate_bar(pct, width=16)
+            self._print(f"  {cat:<18} {count:<8} {fmt_size(size):<10} {pct:5.1f}%   [{bar}]", TEXT_MAIN)
+
+        self._print("────────────────────────────────────────────────────────────────\n", TEXT_MUTED)
+
+    def cmd_top_files(self, path_override: str = ""):
+        folder = path_override if path_override else self.folder_var.get()
+        if not folder or not os.path.isdir(folder):
+            folder = filedialog.askdirectory(title="Select Folder to Find Largest Files")
+            if not folder:
+                self._print("[-] No folder selected.", RED)
+                return
+            self.folder_var.set(folder)
+
+        config_path = get_config_path()
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self._print(f"\n[{timestamp}] [*] Top 10 Largest Files in: {folder}", BLUE)
+        self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
+
+        summary = analyze_directory(folder, config_path)
+        top_files = summary['top_files']
+
+        if not top_files:
+            self._print("[!] No files found.", AMBER)
+            return
+
+        for i, item in enumerate(top_files, 1):
+            name = item['name']
+            size_str = fmt_size(item['size'])
+            cat = item['category']
+            self._print(f"  #{i:<2} {size_str:<10}  {name}  --> ({cat})", TEXT_MAIN)
+
+        self._print("────────────────────────────────────────────────────────────────\n", TEXT_MUTED)
 
     def _cmd_ls(self, path):
         target = path if path else (self.folder_var.get() or os.getcwd())
