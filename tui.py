@@ -17,21 +17,22 @@ def get_config_path() -> str:
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, 'config', 'rules.yaml')
 
-# ── Minimal Terminal Color Palette (Clean Dark Mode) ──
-BG           = "#121212"
-BG_CARD      = "#1c1c1c"
-BG_INPUT     = "#242424"
-BORDER       = "#333333"
+# ── Sleek High-End Terminal Dark Theme ──
+BG           = "#0b0f19"  # Deep Obsidian Navy
+BG_CARD      = "#131b2e"  # Dark Terminal Panel
+BG_INPUT     = "#1a2438"  # Dark Input Surface
+BORDER       = "#26354f"  # Subtle Neon Border
 
-TEXT_MAIN    = "#d4d4d4"
-TEXT_MUTED   = "#757575"
+TEXT_MAIN    = "#e2e8f0"  # Soft Off-White
+TEXT_MUTED   = "#64748b"  # Slate Muted Gray
 
-GREEN        = "#4caf50"
-GREEN_HOVER  = "#388e3c"
-BLUE         = "#64b5f6"
-AMBER        = "#ffb74d"
-RED          = "#e57373"
-PURPLE       = "#b388ff"
+GREEN        = "#10b981"  # Emerald Accent
+GREEN_HOVER  = "#059669"
+BLUE         = "#38bdf8"  # Electric Blue Accent
+BLUE_HOVER   = "#0284c7"
+AMBER        = "#f59e0b"  # Warm Amber
+RED          = "#f43f5e"  # Rose Red
+PURPLE       = "#a855f7"  # Electric Purple
 
 FONT_MONO    = ("Consolas", 12)
 FONT_MONO_SM = ("Consolas", 11)
@@ -53,114 +54,121 @@ class SmartSortTerminal(ctk.CTk):
         super().__init__()
 
         # ── Window Settings ──
-        self.title("SmartSort Terminal")
-        self.geometry("860x620")
-        self.minsize(720, 480)
+        self.title("SmartSort Terminal Engine")
+        self.geometry("900x660")
+        self.minsize(760, 520)
         self.configure(fg_color=BG)
         ctk.set_appearance_mode("dark")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1)
 
-        # ── Header Panel ──
-        header = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=6, border_width=1, border_color=BORDER)
-        header.grid(row=0, column=0, sticky="ew", padx=12, pady=(12, 6))
+        # ── Top Header Panel ──
+        header = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
+        header.grid(row=0, column=0, sticky="ew", padx=14, pady=(14, 8))
         header.grid_columnconfigure(1, weight=1)
 
-        # Title & Subtitle
+        # Title & Status Badge
         title_box = ctk.CTkFrame(header, fg_color="transparent")
-        title_box.grid(row=0, column=0, padx=14, pady=10, sticky="w")
+        title_box.grid(row=0, column=0, padx=16, pady=12, sticky="w")
 
         ctk.CTkLabel(
             title_box, text="# SMARTSORT",
             font=FONT_TITLE, text_color=GREEN
         ).pack(anchor="w")
 
+        status_box = ctk.CTkFrame(title_box, fg_color="transparent")
+        status_box.pack(anchor="w", pady=(2, 0))
+
         ctk.CTkLabel(
-            title_box, text="[v1.2.0] File Organization Terminal Engine",
+            status_box, text="● READY",
+            font=FONT_MONO_SM, text_color=GREEN
+        ).pack(side="left")
+
+        ctk.CTkLabel(
+            status_box, text=" | v1.2.0 Terminal Engine",
             font=FONT_MONO_SM, text_color=TEXT_MUTED
-        ).pack(anchor="w")
+        ).pack(side="left")
 
         # Target Folder Input Box
         self.folder_var = ctk.StringVar(value="")
         self.folder_entry = ctk.CTkEntry(
             header, textvariable=self.folder_var,
-            placeholder_text="Target directory path (click Browse or type)...",
-            font=FONT_MONO_SM, height=34,
-            fg_color=BG_INPUT, border_color=BORDER,
+            placeholder_text="Select target folder (click Browse Folder or type path)...",
+            font=FONT_MONO_SM, height=36,
+            fg_color=BG_INPUT, border_color=BORDER, border_width=1,
             text_color=BLUE, placeholder_text_color=TEXT_MUTED,
-            corner_radius=4
+            corner_radius=6
         )
-        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=10)
+        self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=12)
 
         # Browse Folder Button
         ctk.CTkButton(
-            header, text="[ Browse Folder ]", width=130, height=34,
+            header, text="[ Browse Folder ]", width=140, height=36,
             font=FONT_MONO_SM, fg_color=GREEN, hover_color=GREEN_HOVER,
-            text_color="#ffffff", corner_radius=4,
+            text_color="#ffffff", corner_radius=6,
             command=self.browse_folder
-        ).grid(row=0, column=2, padx=(0, 14), pady=10)
+        ).grid(row=0, column=2, padx=(0, 16), pady=12)
 
-        # ── Toolbar: Action Buttons ──
+        # ── Toolbar: Styled Action Buttons ──
         toolbar = ctk.CTkFrame(self, fg_color=BG, corner_radius=0)
-        toolbar.grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 6))
+        toolbar.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 8))
 
         actions = [
-            ("[ Scan ]", BG_CARD, BLUE, self.cmd_scan),
-            ("[ Top Files ]", BG_CARD, BLUE, self.cmd_top_files),
-            ("[ Dry Run ]", BG_CARD, BLUE, lambda: self.run_sort(True)),
-            ("[ Organize ]", GREEN, "#ffffff", lambda: self.run_sort(False)),
-            ("[ Clean Empty ]", BG_CARD, AMBER, self.cmd_clean_empty),
-            ("[ Undo Last ]", BG_CARD, PURPLE, self.undo_last),
-            ("[ History ]", BG_CARD, TEXT_MUTED, self.show_history),
-            ("[ Clear ]", BG_CARD, TEXT_MUTED, self.clear_terminal),
-            ("[ Help ]", BG_CARD, TEXT_MAIN, self.show_help),
+            ("[ Organize ]", GREEN, GREEN_HOVER, "#ffffff", lambda: self.run_sort(False)),
+            ("[ Dry Run ]", BG_CARD, BORDER, BLUE, lambda: self.run_sort(True)),
+            ("[ Scan ]", BG_CARD, BORDER, BLUE, self.cmd_scan),
+            ("[ Top Files ]", BG_CARD, BORDER, BLUE, self.cmd_top_files),
+            ("[ Clean Empty ]", BG_CARD, BORDER, AMBER, self.cmd_clean_empty),
+            ("[ Undo Last ]", BG_CARD, BORDER, PURPLE, self.undo_last),
+            ("[ History ]", BG_CARD, BORDER, TEXT_MUTED, self.show_history),
+            ("[ Clear ]", BG_CARD, BORDER, TEXT_MUTED, self.clear_terminal),
+            ("[ Help ]", BG_CARD, BORDER, TEXT_MAIN, self.show_help),
         ]
 
-        for text, bg, fg, cmd in actions:
-            hover = GREEN_HOVER if bg == GREEN else BORDER
+        for text, bg, hover, fg, cmd in actions:
             btn = ctk.CTkButton(
-                toolbar, text=text, width=90, height=30,
+                toolbar, text=text, width=92, height=32,
                 font=FONT_MONO_SM, fg_color=bg, hover_color=hover,
-                border_color=BORDER, border_width=1, corner_radius=4,
+                border_color=BORDER, border_width=1, corner_radius=6,
                 text_color=fg, command=cmd
             )
             btn.pack(side="left", padx=2)
 
         # ── Terminal Output Screen ──
-        terminal_frame = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=6, border_width=1, border_color=BORDER)
-        terminal_frame.grid(row=2, column=0, sticky="nsew", padx=12, pady=0)
+        terminal_frame = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
+        terminal_frame.grid(row=2, column=0, sticky="nsew", padx=14, pady=0)
         terminal_frame.grid_columnconfigure(0, weight=1)
         terminal_frame.grid_rowconfigure(0, weight=1)
 
         self.terminal = ctk.CTkTextbox(
             terminal_frame, font=FONT_MONO,
             fg_color=BG_CARD, text_color=TEXT_MAIN,
-            border_width=0, corner_radius=6, wrap="word",
+            border_width=0, corner_radius=8, wrap="word",
             activate_scrollbars=True,
             scrollbar_button_color=BORDER,
             scrollbar_button_hover_color=TEXT_MUTED
         )
-        self.terminal.grid(row=0, column=0, sticky="nsew", padx=8, pady=8)
+        self.terminal.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
         self.terminal.configure(state="disabled")
 
         # ── Command Prompt Bar ──
-        prompt_bar = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=6, border_width=1, border_color=BORDER)
-        prompt_bar.grid(row=3, column=0, sticky="ew", padx=12, pady=10)
+        prompt_bar = ctk.CTkFrame(self, fg_color=BG_CARD, corner_radius=8, border_width=1, border_color=BORDER)
+        prompt_bar.grid(row=3, column=0, sticky="ew", padx=14, pady=12)
         prompt_bar.grid_columnconfigure(1, weight=1)
 
         ctk.CTkLabel(
-            prompt_bar, text="smartsort >",
+            prompt_bar, text="smartsort $",
             font=FONT_MONO_LG, text_color=GREEN
-        ).grid(row=0, column=0, padx=(12, 6), pady=6)
+        ).grid(row=0, column=0, padx=(14, 6), pady=8)
 
         self.cmd_input = ctk.CTkEntry(
             prompt_bar, font=FONT_MONO, fg_color=BG_CARD, text_color=TEXT_MAIN,
             border_width=0, corner_radius=0,
-            placeholder_text="type command (sort, dry-run, browse, clean-empty, ls, history, undo, help)...",
+            placeholder_text="type command (sort, scan, top-files, dry-run, clean-empty, ls, history, undo, help)...",
             placeholder_text_color=TEXT_MUTED
         )
-        self.cmd_input.grid(row=0, column=1, sticky="ew", pady=6)
+        self.cmd_input.grid(row=0, column=1, sticky="ew", pady=8)
         self.cmd_input.bind("<Return>", self._on_enter)
 
         # Print initial banner
@@ -168,8 +176,12 @@ class SmartSortTerminal(ctk.CTk):
 
     def print_banner(self):
         self._print(BANNER_ASCII, GREEN)
-        self._print("  [+] Click [ Browse Folder ] or type 'browse' to select target directory.", BLUE)
-        self._print("  [+] Type 'help' at the prompt to view full command documentation.\n", TEXT_MUTED)
+        self._print("  ┌── QUICK START ─────────────────────────────────────────────────────────────┐", BLUE)
+        self._print("  │ 1. Click [ Browse Folder ] to choose target directory                      │", TEXT_MAIN)
+        self._print("  │ 2. Click [ Scan ] or [ Top Files ] to inspect directory storage            │", TEXT_MAIN)
+        self._print("  │ 3. Click [ Dry Run ] to preview, or [ Organize ] to organize files         │", TEXT_MAIN)
+        self._print("  │ 4. Type 'help' at the prompt for interactive terminal commands             │", TEXT_MAIN)
+        self._print("  └────────────────────────────────────────────────────────────────────────────┘\n", BLUE)
 
     # ── Output Helpers ──
     def _print(self, text: str, color: str = TEXT_MAIN):
@@ -196,7 +208,7 @@ class SmartSortTerminal(ctk.CTk):
             self.folder_var.set(folder)
             timestamp = datetime.now().strftime("%H:%M:%S")
             self._print(f"\n[{timestamp}] [+] Target directory set: {folder}", BLUE)
-            self._print(f"[{timestamp}]     Ready! Click [ Dry Run ] or [ Organize ].", TEXT_MUTED)
+            self._print(f"[{timestamp}]     Ready! Click [ Scan ], [ Dry Run ], or [ Organize ].", TEXT_MUTED)
 
     # ── Command Prompt Dispatch ──
     def _on_enter(self, event):
@@ -206,7 +218,7 @@ class SmartSortTerminal(ctk.CTk):
             return
 
         timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] smartsort > {raw}", GREEN)
+        self._print(f"\n[{timestamp}] smartsort $ {raw}", GREEN)
 
         parts = raw.split(maxsplit=1)
         cmd = parts[0].lower()
