@@ -93,12 +93,21 @@ class FileClassifier:
         is_exact, dup_path, reason = find_duplicate_in_dir(filepath, destination_dir)
         
         if is_exact:
-            # Maybe just skip or move to a "Duplicates" folder? Let's skip.
+            filename = os.path.basename(filepath)
+            dup_dir = os.path.join(self.target_dir, "Duplicates")
+            target_path = self._get_unique_path(dup_dir, filename)
+            
+            if not dry_run:
+                os.makedirs(dup_dir, exist_ok=True)
+                shutil.move(filepath, target_path)
+                log_move(filepath, target_path, "Duplicate detection")
+
             return {
                 'status': 'duplicate',
-                'file': os.path.basename(filepath),
+                'file': filename,
                 'rule': rule_name,
-                'reason': reason
+                'destination': target_path,
+                'reason': f'Exact match of {os.path.basename(dup_path or "")} -> moved to Duplicates'
             }
             
         filename = os.path.basename(filepath)

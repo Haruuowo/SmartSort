@@ -291,8 +291,8 @@ class SmartSortTerminal(ctk.CTk):
                 self.after(0, lambda i=item, d=dest: self._print(f"  [MOVED]     {i}  -->  {d}", GREEN))
             elif status == "duplicate":
                 skipped += 1
-                r = result.get("reason", "")
-                self.after(0, lambda i=item, r=r: self._print(f"  [SKIPPED]   {i}  ({r})", YELLOW))
+                dest = os.path.join("Duplicates", os.path.basename(result.get("destination", "")))
+                self.after(0, lambda i=item, d=dest: self._print(f"  [DUPLICATE] {i}  -->  {d}", YELLOW))
             else:
                 errors += 1
                 r = result.get("reason", "Unknown")
@@ -303,7 +303,7 @@ class SmartSortTerminal(ctk.CTk):
         def finish():
             self.after(0, lambda: self._print("----------------------------------------------------------------", GRAY))
             self.after(0, lambda: self._print(
-                f"[✓] Complete! Moved: {moved} | Skipped: {skipped} | Errors: {errors} | Total: {total}\n",
+                f"[✓] Complete! Moved: {moved} | Duplicates: {skipped} | Errors: {errors} | Total: {total}\n",
                 GREEN if errors == 0 else YELLOW
             ))
 
