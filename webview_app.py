@@ -6,18 +6,18 @@ import threading
 
 def run_app():
     # Start local backend API server on port 7860 in daemon thread
-    server_thread = threading.Thread(target=start_server, args=(7860,), daemon=True)
+    server_thread = threading.Thread(target=start_server, args=(7860, False), daemon=True)
     server_thread.start()
 
     # Create PyWebView standalone desktop application window
     window = webview.create_window(
-        title="SmartSort — Modern File Organizer",
+        title="SmartSort Engine",
         url="http://127.0.0.1:7860",
         width=1040,
         height=680,
         resizable=True,
         min_size=(840, 540),
-        background_color="#0b0f17"
+        background_color="#0d080e"
     )
 
     webview.start()

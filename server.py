@@ -197,12 +197,26 @@ class SmartSortRequestHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(404, "Endpoint not found")
 
-def start_server(port=7860):
+def start_server(port=7860, open_browser=False):
     init_db()
-    server = HTTPServer(('127.0.0.1', port), SmartSortRequestHandler)
-    print(f"SmartSort Web App running at http://127.0.0.1:{port}")
-    webbrowser.open(f"http://127.0.0.1:{port}")
+    server = None
+    actual_port = port
+    for p in range(port, port + 20):
+        try:
+            server = HTTPServer(('127.0.0.1', p), SmartSortRequestHandler)
+            actual_port = p
+            break
+        except OSError:
+            continue
+
+    if server is None:
+        raise RuntimeError("Could not find free port for SmartSort server.")
+
+    print(f"SmartSort Engine running at http://127.0.0.1:{actual_port}")
+    if open_browser:
+        webbrowser.open(f"http://127.0.0.1:{actual_port}")
+    
     server.serve_forever()
 
 if __name__ == '__main__':
-    start_server()
+    start_server(open_browser=True)
