@@ -77,7 +77,7 @@ class SmartSortTerminal(ctk.CTk):
         ).pack(anchor="w")
 
         ctk.CTkLabel(
-            title_box, text="[v1.0.0] File Organization Terminal Engine",
+            title_box, text="[v1.2.0] File Organization Terminal Engine",
             font=FONT_MONO_SM, text_color=TEXT_MUTED
         ).pack(anchor="w")
 
