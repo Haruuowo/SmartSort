@@ -1,8 +1,8 @@
 <div align="center">
 
-# ⚡ SmartSort
+# SmartSort
 
-**An intelligent, rule-based file organizer with a sleek desktop GUI.**
+**An intelligent, rule-based file organizer with a terminal-style desktop UI.**
 
 Built with Python · CustomTkinter · SQLite
 
@@ -14,87 +14,68 @@ Built with Python · CustomTkinter · SQLite
 
 ---
 
-## 🎯 What is SmartSort?
+## What is SmartSort?
 
-SmartSort is a **desktop application** that intelligently organizes your messy files into categorized folders. It uses content-based detection (not just file extensions), custom YAML rules, EXIF metadata for photos, and built-in deduplication — all wrapped in a modern dark-themed GUI.
+SmartSort is a desktop application that organizes your files into categorized folders. It uses content-based detection (not just file extensions), custom YAML rules, EXIF metadata for photos, and built-in deduplication — wrapped in a terminal-style GUI.
 
-> **No more manually sorting your Downloads folder.** Just point SmartSort at a directory, hit Organize, and watch the magic happen.
+> No more manually sorting your Downloads folder. Point SmartSort at a directory, run `sort`, and it handles the rest.
 
 ---
 
-## ✨ Features
+## Features
 
 | Feature | Description |
 |---|---|
-| 🖥️ **Desktop GUI** | Modern dark-themed interface — no terminal needed |
-| 📁 **Smart Classification** | Uses content signatures, not just file extensions |
-| 📷 **EXIF-aware** | Sorts photos by date taken (year/month) |
-| 🔄 **Deduplication** | Detects and skips exact duplicate files |
-| ↩️ **Undo System** | Every move is logged in SQLite — instantly revert any operation |
-| ⚡ **Dry Run Mode** | Preview where files *would* go before committing |
-| 👁️ **File Watching** | Auto-organize files as they drop into a folder |
-| 📝 **Custom Rules** | Define your own sorting rules via YAML config |
+| Desktop GUI | Terminal-style interface — no actual terminal needed |
+| Smart Classification | Uses content signatures, not just file extensions |
+| EXIF-aware | Sorts photos by date taken (year/month) |
+| Deduplication | Detects and skips exact duplicate files |
+| Undo System | Every move is logged in SQLite — revert any operation |
+| Dry Run Mode | Preview where files would go before committing |
+| File Watching | Auto-organize files as they drop into a folder |
+| Custom Rules | Define your own sorting rules via YAML config |
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
-### Option 1: Download the Executable (Recommended)
-1. Go to [**Releases**](https://github.com/Haruuowo/SmartSort/releases)
+### Option 1: Download the Executable
+1. Go to [Releases](https://github.com/Haruuowo/SmartSort/releases)
 2. Download `SmartSort.exe`
-3. Double-click to run — no installation needed!
+3. Double-click to run — no installation needed
 
 ### Option 2: Run from Source
 ```bash
-# Clone the repo
 git clone https://github.com/Haruuowo/SmartSort.git
 cd SmartSort
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Launch the GUI
 python tui.py
 ```
 
 ---
 
-## 🖥️ Desktop App
+## Commands
 
-The GUI features:
-- **Browse** — Native Windows file picker to select any folder
-- **Dry Run** — Simulate the sort to preview what will happen
-- **Organize** — Execute the sort for real
-- **Undo Last** — Revert the most recent operation
-- **Stats Dashboard** — See totals, moved, skipped, and errors at a glance
-- **Results Table** — Color-coded breakdown of every file processed
+The app uses a terminal-style prompt. Type these commands:
 
----
-
-## 🛠️ CLI Usage
-
-SmartSort also works as a command-line tool:
-
-```bash
-# Sort a folder
-python -m smartsort sort "C:\Path\To\Folder"
-
-# Watch a folder in real-time
-python -m smartsort watch "C:\Path\To\Folder"
-
-# Preview without moving files
-python -m smartsort dry-run "C:\Path\To\Folder"
-
-# Undo operations
-python -m smartsort undo --limit 5
-python -m smartsort undo --all
-```
+| Command | Description |
+|---|---|
+| `sort <path>` | Organize files in a directory |
+| `dry-run <path>` | Simulate without moving files |
+| `sort` / `browse` | Opens a folder picker dialog |
+| `ls <path>` | List files in a directory |
+| `history` | Show recent move operations |
+| `undo` | Undo the last move |
+| `undo all` | Undo all recorded moves |
+| `clear` | Clear terminal output |
+| `pwd` | Print working directory |
+| `exit` | Quit |
 
 ---
 
-## ⚙️ Custom Rules
+## Custom Rules
 
-Edit `config/rules.yaml` to define your own sorting rules:
+Edit `config/rules.yaml` to define sorting rules:
 
 ```yaml
 rules:
@@ -117,19 +98,18 @@ rules:
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 SmartSort/
-├── tui.py                  # Desktop GUI application
-├── api.py                  # FastAPI backend (optional)
+├── tui.py                  # Desktop GUI (terminal-style)
 ├── config/
-│   └── rules.yaml          # Sorting rules configuration
+│   └── rules.yaml          # Sorting rules
 ├── smartsort/
-│   ├── classifier.py       # Core file classification engine
-│   ├── cli.py              # CLI interface (Typer)
+│   ├── classifier.py       # File classification engine
+│   ├── cli.py              # CLI interface
 │   ├── dedupe.py           # Duplicate detection
-│   ├── history.py          # SQLite undo/history system
+│   ├── history.py          # SQLite undo system
 │   ├── rules.py            # YAML rule engine
 │   └── watcher.py          # Real-time file watcher
 ├── tests/
@@ -142,18 +122,10 @@ SmartSort/
 
 ---
 
-## 🧪 Running Tests
-
-```bash
-pytest tests/
-```
-
----
-
-## 🛡️ Tech Stack
+## Tech Stack
 
 - **Python 3.11** — Core logic
-- **CustomTkinter** — Modern desktop GUI
+- **CustomTkinter** — Desktop GUI
 - **SQLite** — Undo/history database
 - **Pillow** — EXIF metadata extraction
 - **filetype** — Content-based file detection
@@ -162,8 +134,16 @@ pytest tests/
 
 ---
 
+## Tests
+
+```bash
+pytest tests/
+```
+
+---
+
 <div align="center">
 
-Made with 💜 by [Haruuowo](https://github.com/Haruuowo)
+Made by [Haruuowo](https://github.com/Haruuowo)
 
 </div>
