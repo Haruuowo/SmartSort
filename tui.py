@@ -1,12 +1,26 @@
 import os
+import sys
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.widgets import Header, Footer, Button, Input, Static, DataTable, Label
 from textual.reactive import reactive
-from smartsort import classifier
+
+from smartsort.classifier import FileClassifier
+
+def get_config_path() -> str:
+    """Resolve config path, works both in dev and when bundled as exe."""
+    if getattr(sys, 'frozen', False):
+        # Running as a PyInstaller bundle
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base, 'config', 'rules.yaml')
 
 class SmartSortTUI(App):
     """A Textual app to organize files."""
+
+    TITLE = "SmartSort"
+    SUB_TITLE = "Terminal File Organizer"
     
     CSS = """
     Screen {
@@ -54,11 +68,15 @@ class SmartSortTUI(App):
         color: $text-muted;
     }
     
+    #stats-title {
+        text-style: bold;
+        color: $primary;
+    }
+    
     .stat-value {
         text-align: center;
         text-style: bold;
         color: $accent;
-        font-size: 20;
         margin-bottom: 1;
     }
 
@@ -71,14 +89,14 @@ class SmartSortTUI(App):
         yield Header(show_clock=True)
         with Container(id="main-container"):
             with Horizontal(id="controls"):
-                yield Input(placeholder="Enter folder path (e.g. C:\\\\Users\\\\...)", id="folder-input")
+                yield Input(placeholder="Enter folder path (e.g. C:\\Users\\...)", id="folder-input")
                 with Horizontal(id="buttons"):
                     yield Button("Dry Run", id="btn-dry-run", variant="primary")
                     yield Button("Execute", id="btn-execute", variant="error")
                     
             with Horizontal(id="results-area"):
                 with Vertical(id="stats-panel"):
-                    yield Label("STATISTICS", classes="stat-label", style="text-style: bold; color: $primary")
+                    yield Label("STATISTICS", id="stats-title", classes="stat-label")
                     yield Label("Moved Files", classes="stat-label")
                     yield Label("0", id="stat-moved", classes="stat-value")
                     yield Label("Duplicates", classes="stat-label")
@@ -106,9 +124,16 @@ class SmartSortTUI(App):
         dry_run = event.button.id == "btn-dry-run"
         self.run_sort(folder_path, dry_run)
 
-    def run_sort(self, folder, dry_run):
+    def run_sort(self, folder: str, dry_run: bool) -> None:
         table = self.query_one(DataTable)
         table.clear()
+        
+        config_path = get_config_path()
+        if not os.path.exists(config_path):
+            self.notify(f"Config not found: {config_path}", severity="error")
+            return
+        
+        file_classifier = FileClassifier(folder, config_path)
         
         try:
             files_to_process = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
@@ -120,7 +145,7 @@ class SmartSortTUI(App):
         
         for item in files_to_process:
             item_path = os.path.join(folder, item)
-            result = classifier.process_file(item_path, dry_run=dry_run)
+            result = file_classifier.process_file(item_path, dry_run=dry_run)
             status = result.get('status')
             
             dest_or_reason = ""
