@@ -187,6 +187,7 @@ class SmartSortTerminal(ctk.CTk):
         self.terminal.configure(state="normal")
         self.terminal.delete("1.0", END)
         self.terminal.configure(state="disabled")
+        self.print_banner()
 
     # ── Folder Picker ──
     def browse_folder(self):
