@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartSort — Modern File Organization Engine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo-icon">⚡</div>
+        <div class="brand-text">
+          <h1>SmartSort</h1>
+          <span class="badge">v1.2.0</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Dashboard
+        </a>
+        <a href="#analyzer" class="nav-item" data-tab="analyzer">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+          Storage Analyzer
+        </a>
+        <a href="#history" class="nav-item" data-tab="history">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Move History
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="status-indicator">
+          <span class="dot glowing"></span>
+          <span class="status-text">Engine Ready</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Header Bar -->
+      <header class="top-header">
+        <div class="search-bar-container">
+          <div class="path-input-group">
+            <svg class="folder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <input type="text" id="targetPath" placeholder="Select or paste target directory path..." readonly />
+            <button id="browseBtn" class="btn btn-secondary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+              Browse Folder
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard View -->
+      <div id="tab-dashboard" class="tab-content active">
+        <!-- Stats Summary Cards -->
+        <section class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Total Files</span>
+              <div class="stat-icon purple">📁</div>
+            </div>
+            <div class="stat-value" id="statTotalFiles">0</div>
+            <span class="stat-desc">In target directory</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Storage Used</span>
+              <div class="stat-icon blue">💾</div>
+            </div>
+            <div class="stat-value" id="statTotalSize">0 MB</div>
+            <span class="stat-desc">Calculated size</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Categories</span>
+              <div class="stat-icon green">🏷️</div>
+            </div>
+            <div class="stat-value" id="statCategories">0</div>
+            <span class="stat-desc">Active rules matched</span>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Duplicates</span>
+              <div class="stat-icon amber">⚠️</div>
+            </div>
+            <div class="stat-value" id="statDuplicates">0</div>
+            <span class="stat-desc">Identified duplicates</span>
+          </div>
+        </section>
+
+        <!-- Primary Action Toolbar -->
+        <section class="action-panel">
+          <div class="action-group">
+            <button id="organizeBtn" class="btn btn-primary btn-large">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Organize Now
+            </button>
+
+            <button id="dryRunBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              Dry Run Simulation
+            </button>
+
+            <button id="scanBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+              Scan Storage
+            </button>
+
+            <button id="cleanEmptyBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              Clean Empty Folders
+            </button>
+
+            <button id="undoBtn" class="btn btn-outline">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+              Undo Last Move
+            </button>
+          </div>
+        </section>
+
+        <!-- Storage Category Breakdown Grid -->
+        <section class="breakdown-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Category Storage Distribution</h3>
+              <span class="subtitle">File type breakdown</span>
+            </div>
+            <div class="card-body">
+              <div id="categoryBars" class="category-bars-list">
+                <div class="empty-placeholder">Select a folder and click <strong>Scan Storage</strong> to view distribution.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Console Activity Log Feed -->
+        <section class="log-section">
+          <div class="card log-card">
+            <div class="card-header log-header">
+              <div class="title-with-badge">
+                <h3>Console Activity Log</h3>
+                <span id="logCountBadge" class="count-badge">0 events</span>
+              </div>
+              <button id="clearLogBtn" class="btn-sm text-btn">Clear Log</button>
+            </div>
+            <div class="card-body log-body">
+              <div id="consoleLog" class="console-log-feed">
+                <div class="log-entry info"><span class="time">[INIT]</span> SmartSort Engine v1.2.0 loaded. Select a folder to begin.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Storage Analyzer View -->
+      <div id="tab-analyzer" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>Top 10 Storage Hogs</h3>
+            <span class="subtitle">Largest files in target directory</span>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Filename</th>
+                  <th>Size</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody id="topFilesTable">
+                <tr><td colspan="4" class="empty-placeholder">Click <strong>Scan Storage</strong> to analyze top files.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- History View -->
+      <div id="tab-history" class="tab-content">
+        <div class="card">
+          <div class="card-header">
+            <h3>File Move History</h3>
+            <button id="refreshHistoryBtn" class="btn-sm btn-secondary">Refresh</button>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Original Path</th>
+                  <th>Destination</th>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="historyTable">
+                <tr><td colspan="5" class="empty-placeholder">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
