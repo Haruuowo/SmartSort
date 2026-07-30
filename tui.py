@@ -244,7 +244,7 @@ class SmartSortTerminal(ctk.CTk):
     def show_help(self):
         help_text = """
 ======================= COMMAND REFERENCE =======================
-  scan [path]        WizTree-style category & size breakdown
+  scan [path]        Directory category & size breakdown
   top-files [path]   Show 10 largest files in directory
   sort [path]        Organize files in directory
   dry-run [path]     Simulate sort without moving files
@@ -271,7 +271,7 @@ class SmartSortTerminal(ctk.CTk):
 
         config_path = get_config_path()
         timestamp = datetime.now().strftime("%H:%M:%S")
-        self._print(f"\n[{timestamp}] [*] Scanning folder (WizTree Breakdown): {folder}", BLUE)
+        self._print(f"\n[{timestamp}] [*] Scanning folder (Storage Breakdown): {folder}", BLUE)
         self._print("────────────────────────────────────────────────────────────────", TEXT_MUTED)
 
         summary = analyze_directory(folder, config_path)

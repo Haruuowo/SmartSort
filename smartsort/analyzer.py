@@ -6,7 +6,7 @@ from .classifier import FileClassifier
 
 def analyze_directory(target_dir: str, config_path: str) -> Dict:
     """
-    Analyzes target_dir in WizTree style:
+    Analyzes target_dir storage breakdown:
     - Breakdown by category (file count, total bytes, % of total size, visual bar)
     - Top 10 largest files
     """
