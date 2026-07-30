@@ -45,7 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // API Call Helper
   async function apiCall(endpoint, payload = {}) {
     try {
-      const res = await fetch(`/api/${endpoint}`, {
+      const port = window.API_PORT || 7860;
+      const baseUrl = window.location.protocol.startsWith('http') ? '' : `http://127.0.0.1:${port}`;
+      const res = await fetch(`${baseUrl}/api/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
