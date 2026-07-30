@@ -16,7 +16,7 @@ def get_config_path() -> str:
         base = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base, 'config', 'rules.yaml')
 
-# ── Aesthetic Color Palette (GitHub Dark / Neon Terminal) ──
+# ── Aesthetic Color Palette (GitHub Dark / Hacker Terminal) ──
 BG           = "#090d16"
 BG_CARD      = "#111827"
 BG_INPUT     = "#1f2937"
@@ -27,7 +27,6 @@ TEXT_MUTED   = "#9ca3af"
 EMERALD      = "#10b981"
 EMERALD_HOVER= "#059669"
 CYAN         = "#38bdf8"
-CYAN_HOVER   = "#0284c7"
 AMBER        = "#f59e0b"
 CRIMSON      = "#ef4444"
 PURPLE       = "#a855f7"
@@ -35,7 +34,17 @@ PURPLE       = "#a855f7"
 FONT_MONO    = ("Consolas", 12)
 FONT_MONO_SM = ("Consolas", 11)
 FONT_MONO_LG = ("Consolas", 14, "bold")
-FONT_TITLE   = ("Consolas", 20, "bold")
+FONT_TITLE   = ("Consolas", 18, "bold")
+
+# Big Hash ASCII Banner
+BANNER_ASCII = r"""
+  ███████╗███╗   ███╗█████╗ ██████╗ ████████╗███████╗██████╗ ████████╗
+  ██╔════╝████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗╚══██╔══╝
+  ███████╗██╔████╔██║███████║██████╔╝   ██║   ███████╗██║  ██║   ██║   
+  ╚════██║██║╚██╔╝██║██╔══██║██╔══██╗   ██║   ╚════██║██║  ██║   ██║   
+  ███████║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║   ███████║██████╔╝   ██║   
+  ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═════╝    ╚═╝   
+"""
 
 
 class SmartSortTerminal(ctk.CTk):
@@ -44,8 +53,8 @@ class SmartSortTerminal(ctk.CTk):
 
         # ── Window Settings ──
         self.title("SmartSort Terminal")
-        self.geometry("860x620")
-        self.minsize(720, 480)
+        self.geometry("880x640")
+        self.minsize(740, 500)
         self.configure(fg_color=BG)
         ctk.set_appearance_mode("dark")
 
@@ -62,12 +71,12 @@ class SmartSortTerminal(ctk.CTk):
         title_box.grid(row=0, column=0, padx=16, pady=12, sticky="w")
 
         ctk.CTkLabel(
-            title_box, text="⚡ SmartSort",
+            title_box, text="# SMARTSORT",
             font=FONT_TITLE, text_color=EMERALD
         ).pack(anchor="w")
 
         ctk.CTkLabel(
-            title_box, text="Intelligent File Organizer Terminal v1.0",
+            title_box, text="[v1.0.0] File Organization Terminal Engine",
             font=FONT_MONO_SM, text_color=TEXT_MUTED
         ).pack(anchor="w")
 
@@ -83,26 +92,26 @@ class SmartSortTerminal(ctk.CTk):
         )
         self.folder_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=12)
 
-        # Browse Button
+        # Browse Folder Button
         ctk.CTkButton(
-            header, text="📁 Browse Folder", width=130, height=36,
+            header, text="[ Browse Folder ]", width=140, height=36,
             font=FONT_MONO_SM, fg_color=EMERALD, hover_color=EMERALD_HOVER,
             text_color="#ffffff", corner_radius=6,
             command=self.browse_folder
         ).grid(row=0, column=2, padx=(0, 14), pady=12)
 
-        # ── Toolbar: Quick Action Buttons ──
+        # ── Toolbar: Action Buttons ──
         toolbar = ctk.CTkFrame(self, fg_color=BG, corner_radius=0)
         toolbar.grid(row=1, column=0, sticky="ew", padx=14, pady=(0, 8))
 
         actions = [
-            ("⚡ Dry Run", BG_INPUT, CYAN, lambda: self.run_sort(True)),
-            ("🚀 Organize", EMERALD, "#ffffff", lambda: self.run_sort(False)),
-            ("🗑️ Clean Empty", BG_INPUT, AMBER, self.cmd_clean_empty),
-            ("↩ Undo Last", BG_INPUT, PURPLE, self.undo_last),
-            ("📋 History", BG_INPUT, TEXT_MUTED, self.show_history),
-            ("🧹 Clear Screen", BG_INPUT, TEXT_MUTED, self.clear_terminal),
-            ("❓ Help", BG_INPUT, TEXT_MAIN, self.show_help),
+            ("[ Dry Run ]", BG_INPUT, CYAN, lambda: self.run_sort(True)),
+            ("[ Organize ]", EMERALD, "#ffffff", lambda: self.run_sort(False)),
+            ("[ Clean Empty ]", BG_INPUT, AMBER, self.cmd_clean_empty),
+            ("[ Undo Last ]", BG_INPUT, PURPLE, self.undo_last),
+            ("[ History ]", BG_INPUT, TEXT_MUTED, self.show_history),
+            ("[ Clear ]", BG_INPUT, TEXT_MUTED, self.clear_terminal),
+            ("[ Help ]", BG_INPUT, TEXT_MAIN, self.show_help),
         ]
 
         for text, bg, fg, cmd in actions:
@@ -155,15 +164,9 @@ class SmartSortTerminal(ctk.CTk):
         self.print_banner()
 
     def print_banner(self):
-        banner = """
-┌──────────────────────────────────────────────────────────────┐
-│                    SMARTSORT TERMINAL                        │
-│             Automated File Organization Engine               │
-└──────────────────────────────────────────────────────────────┘
-"""
-        self._print(banner, EMERALD)
-        self._print("[+] Click [📁 Browse Folder] above or type 'browse' to select a directory.", CYAN)
-        self._print("[+] Type 'help' at the prompt to view full command documentation.\n", TEXT_MUTED)
+        self._print(BANNER_ASCII, EMERALD)
+        self._print("  [+] Click [ Browse Folder ] or type 'browse' to select target directory.", CYAN)
+        self._print("  [+] Type 'help' at the prompt to view full command documentation.\n", TEXT_MUTED)
 
     # ── Output Helpers ──
     def _print(self, text: str, color: str = TEXT_MAIN):
@@ -188,8 +191,8 @@ class SmartSortTerminal(ctk.CTk):
         if folder:
             self.folder_var.set(folder)
             timestamp = datetime.now().strftime("%H:%M:%S")
-            self._print(f"\n[{timestamp}] [+] Target folder set: {folder}", CYAN)
-            self._print(f"[{timestamp}]     Ready! Click [⚡ Dry Run] or [🚀 Organize].", TEXT_MUTED)
+            self._print(f"\n[{timestamp}] [+] Target directory set: {folder}", CYAN)
+            self._print(f"[{timestamp}]     Ready! Click [ Dry Run ] or [ Organize ].", TEXT_MUTED)
 
     # ── Command Prompt Dispatch ──
     def _on_enter(self, event):
@@ -283,7 +286,7 @@ class SmartSortTerminal(ctk.CTk):
         else:
             for d in removed:
                 self._print(f"  [REMOVED] Empty folder: {d}", CRIMSON)
-            self._print(f"[{timestamp}] [✓] Cleaned {len(removed)} empty subfolder(s).\n", EMERALD)
+            self._print(f"[{timestamp}] [+] Cleaned {len(removed)} empty subfolder(s).\n", EMERALD)
 
     def run_sort(self, dry_run: bool, path_override: str = ""):
         folder = path_override if path_override else self.folder_var.get()
@@ -346,7 +349,7 @@ class SmartSortTerminal(ctk.CTk):
             timestamp = datetime.now().strftime("%H:%M:%S")
             self._print("─" * 64, TEXT_MUTED)
             self._print(
-                f"[{timestamp}] [✓] Complete! Moved: {moved} | Duplicates: {duplicates} | Errors: {errors} | Total: {total}\n",
+                f"[{timestamp}] [+] Complete! Moved: {moved} | Duplicates: {duplicates} | Errors: {errors} | Total: {total}\n",
                 EMERALD if errors == 0 else AMBER
             )
 
