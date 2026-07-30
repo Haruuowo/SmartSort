@@ -1,58 +1,48 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Navigation Tabs
-  const navItems = document.querySelectorAll('.nav-item');
-  const tabContents = document.querySelectorAll('.tab-content');
+  const BANNER_ASCII = `
+  ███████╗███╗   ███╗█████╗ ██████╗ ████████╗███████╗██████╗ ██████╗ ████████╗
+  ██╔════╝████╗ ████║██╔══██╗██╔══██╗╚══██╔══╝██╔════╝██╔══██╗██╔══██╗╚══██╔══╝
+  ███████╗██╔████╔██║███████║██████╔╝   ██║   ███████╗██║  ██║██████╔╝   ██║   
+  ╚════██║██║╚██╔╝██║██╔══██║██╔══██╗   ██║   ╚════██║██║  ██║██╔══██╗   ██║   
+  ███████║██║ ╚═╝ ██║██║  ██║██║  ██║   ██║   ███████║╚██████╔╝██║  ██║   ██║   
+  ╚══════╝╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
+`;
 
-  navItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-      e.preventDefault();
-      const targetTab = item.getAttribute('data-tab');
-
-      navItems.forEach(n => n.classList.remove('active'));
-      tabContents.forEach(t => t.classList.remove('active'));
-
-      item.classList.add('active');
-      document.getElementById(`tab-${targetTab}`).classList.add('active');
-
-      if (targetTab === 'history') {
-        fetchHistory();
-      }
-    });
-  });
-
-  // DOM Elements
   const targetPathInput = document.getElementById('targetPath');
+  const cmdInput = document.getElementById('cmdInput');
+  const terminalBody = document.getElementById('terminalBody');
+
   const browseBtn = document.getElementById('browseBtn');
   const organizeBtn = document.getElementById('organizeBtn');
   const dryRunBtn = document.getElementById('dryRunBtn');
   const scanBtn = document.getElementById('scanBtn');
+  const topFilesBtn = document.getElementById('topFilesBtn');
   const cleanEmptyBtn = document.getElementById('cleanEmptyBtn');
   const undoBtn = document.getElementById('undoBtn');
-  const consoleLog = document.getElementById('consoleLog');
-  const logCountBadge = document.getElementById('logCountBadge');
-  const clearLogBtn = document.getElementById('clearLogBtn');
-  const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
+  const historyBtn = document.getElementById('historyBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const helpBtn = document.getElementById('helpBtn');
 
-  let logCount = 1;
-
-  function appendLog(message, type = 'info') {
-    const time = new Date().toLocaleTimeString();
-    const entry = document.createElement('div');
-    entry.className = `log-entry ${type}`;
-    entry.innerHTML = `<span class="time">[${time}]</span> ${message}`;
-    consoleLog.appendChild(entry);
-    consoleLog.scrollTop = consoleLog.scrollHeight;
-    logCount++;
-    logCountBadge.textContent = `${logCount} events`;
+  function printLine(text, colorClass = '') {
+    const div = document.createElement('div');
+    div.className = `log-line ${colorClass}`;
+    div.textContent = text;
+    terminalBody.appendChild(div);
+    terminalBody.scrollTop = terminalBody.scrollHeight;
   }
 
-  clearLogBtn.addEventListener('click', () => {
-    consoleLog.innerHTML = '';
-    logCount = 0;
-    logCountBadge.textContent = '0 events';
-  });
+  function printBanner() {
+    printLine(BANNER_ASCII, 'green');
+    printLine("  [+] Click [ Browse Folder ] or type 'browse' to select target directory.", 'blue');
+    printLine("  [+] Type 'help' at the prompt to view full command documentation.\n", 'muted');
+  }
 
-  // API Call Helpers
+  function clearTerminal() {
+    terminalBody.innerHTML = '';
+    printBanner();
+  }
+
+  // API Call Helper
   async function apiCall(endpoint, payload = {}) {
     try {
       const res = await fetch(`/api/${endpoint}`, {
@@ -62,179 +52,199 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       return await res.json();
     } catch (err) {
-      appendLog(`Network error: ${err.message}`, 'error');
+      printLine(`[-] Network error: ${err.message}`, 'red');
       return { success: false, error: err.message };
     }
   }
 
-  // Browse Folder
-  browseBtn.addEventListener('click', async () => {
-    appendLog('Opening folder picker dialog...', 'info');
+  // Actions
+  async function browseFolder() {
+    printLine("\n[*] Opening Windows folder picker...", 'blue');
     const res = await apiCall('browse');
     if (res.success && res.path) {
       targetPathInput.value = res.path;
-      appendLog(`Target directory set to: ${res.path}`, 'success');
-      runScan(res.path);
+      const timestamp = new Date().toLocaleTimeString();
+      printLine(`[${timestamp}] [+] Target directory set: ${res.path}`, 'blue');
+      printLine(`[${timestamp}]     Ready! Click [ Dry Run ], [ Scan Storage ], or [ Organize ].`, 'muted');
     } else {
-      appendLog('Folder selection cancelled.', 'warning');
-    }
-  });
-
-  // Scan Storage
-  async function runScan(path) {
-    const target = path || targetPathInput.value;
-    if (!target) {
-      appendLog('Please select a folder first.', 'error');
-      return;
-    }
-
-    appendLog(`Scanning storage distribution for: ${target}`, 'info');
-    const data = await apiCall('scan', { path: target });
-
-    if (data.success) {
-      document.getElementById('statTotalFiles').textContent = data.total_files;
-      document.getElementById('statTotalSize').textContent = data.formatted_size;
-      document.getElementById('statCategories').textContent = Object.keys(data.categories).length;
-
-      // Render Category Bars
-      const categoryBars = document.getElementById('categoryBars');
-      categoryBars.innerHTML = '';
-
-      if (Object.keys(data.categories).length === 0) {
-        categoryBars.innerHTML = '<div class="empty-placeholder">No files found in directory.</div>';
-      } else {
-        Object.entries(data.categories).forEach(([cat, info]) => {
-          const pct = data.total_size > 0 ? ((info.size / data.total_size) * 100).toFixed(1) : 0;
-          const barItem = document.createElement('div');
-          barItem.className = 'cat-bar-item';
-          barItem.innerHTML = `
-            <div class="cat-bar-meta">
-              <span>${cat} (${info.count} files)</span>
-              <span>${info.formatted_size} (${pct}%)</span>
-            </div>
-            <div class="cat-bar-track">
-              <div class="cat-bar-fill" style="width: ${pct}%"></div>
-            </div>
-          `;
-          categoryBars.appendChild(barItem);
-        });
-      }
-
-      // Render Top Files Table
-      const topFilesTable = document.getElementById('topFilesTable');
-      topFilesTable.innerHTML = '';
-      if (data.top_files.length === 0) {
-        topFilesTable.innerHTML = '<tr><td colspan="4" class="empty-placeholder">No files found.</td></tr>';
-      } else {
-        data.top_files.forEach((f, idx) => {
-          const tr = document.createElement('tr');
-          tr.innerHTML = `
-            <td>#${idx + 1}</td>
-            <td><strong>${f.name}</strong></td>
-            <td>${f.formatted_size}</td>
-            <td><span class="badge">${f.category}</span></td>
-          `;
-          topFilesTable.appendChild(tr);
-        });
-      }
-
-      appendLog(`Scan complete! Found ${data.total_files} files (${data.formatted_size}).`, 'success');
+      printLine("[-] Folder selection cancelled.", 'amber');
     }
   }
 
-  scanBtn.addEventListener('click', () => runScan());
-
-  // Organize Files
-  organizeBtn.addEventListener('click', async () => {
-    const target = targetPathInput.value;
+  async function runSort(dryRun = false, overridePath = '') {
+    const target = overridePath || targetPathInput.value;
     if (!target) {
-      appendLog('Please select a folder first.', 'error');
+      printLine("[-] Please select a valid folder path.", 'red');
       return;
     }
 
-    appendLog(`Executing file organization on: ${target}`, 'info');
-    const res = await apiCall('sort', { path: target, dry_run: false });
+    const timestamp = new Date().toLocaleTimeString();
+    const mode = dryRun ? "DRY RUN SIMULATION" : "EXECUTING SORT";
+    printLine(`\n[${timestamp}] [*] Starting [${mode}] on: ${target}`, dryRun ? 'amber' : 'green');
+    printLine("────────────────────────────────────────────────────────────────", 'muted');
 
+    const res = await apiCall('sort', { path: target, dry_run: dryRun });
     if (res.success) {
-      appendLog(`Organization Complete! Moved: ${res.moved} | Duplicates: ${res.duplicates} | Errors: ${res.errors}`, 'success');
-      document.getElementById('statDuplicates').textContent = res.duplicates;
-      runScan(target);
+      const endStamp = new Date().toLocaleTimeString();
+      printLine("────────────────────────────────────────────────────────────────", 'muted');
+      printLine(`[${endStamp}] [+] Complete! Moved: ${res.moved} | Duplicates: ${res.duplicates} | Errors: ${res.errors} | Total: ${res.total}\n`, res.errors === 0 ? 'green' : 'amber');
     }
-  });
+  }
 
-  // Dry Run Simulation
-  dryRunBtn.addEventListener('click', async () => {
-    const target = targetPathInput.value;
+  async function runScan(overridePath = '') {
+    const target = overridePath || targetPathInput.value;
     if (!target) {
-      appendLog('Please select a folder first.', 'error');
+      printLine("[-] Please select a folder to scan.", 'red');
       return;
     }
 
-    appendLog(`Running Dry-Run simulation on: ${target}`, 'warning');
-    const res = await apiCall('sort', { path: target, dry_run: true });
+    const timestamp = new Date().toLocaleTimeString();
+    printLine(`\n[${timestamp}] [*] Scanning folder storage breakdown: ${target}`, 'blue');
+    printLine("────────────────────────────────────────────────────────────────", 'muted');
 
+    const res = await apiCall('scan', { path: target });
     if (res.success) {
-      appendLog(`Dry Run Complete! Files to move: ${res.moved} | Duplicates: ${res.duplicates}`, 'info');
-    }
-  });
+      if (res.total_files === 0) {
+        printLine("[!] Folder is empty.", 'amber');
+        return;
+      }
 
-  // Clean Empty Folders
-  cleanEmptyBtn.addEventListener('click', async () => {
-    const target = targetPathInput.value;
+      printLine(`Total Folder Size: ${res.formatted_size} (${res.total_files} files)\n`, 'green');
+      printLine(`  ${'CATEGORY'.padEnd(18)} ${'FILES'.padEnd(8)} ${'SIZE'.padEnd(10)} ${'% SIZE'.padEnd(8)} VISUAL DISTRIBUTION`, 'muted');
+      printLine(`  ${'─'.repeat(18)} ${'─'.repeat(8)} ${'─'.repeat(10)} ${'─'.repeat(8)} ${'─'.repeat(22)}`, 'muted');
+
+      Object.entries(res.categories).forEach(([cat, data]) => {
+        const pct = res.total_size > 0 ? ((data.size / res.total_size) * 100) : 0;
+        const filled = Math.min(Math.max(Math.round(16 * (pct / 100)), 0), 16);
+        const bar = "█".repeat(filled) + "░".repeat(16 - filled);
+        printLine(`  ${cat.padEnd(18)} ${String(data.count).padEnd(8)} ${data.formatted_size.padEnd(10)} ${pct.toFixed(1).padStart(5)}%   [${bar}]`, 'text');
+      });
+
+      printLine("────────────────────────────────────────────────────────────────\n", 'muted');
+    }
+  }
+
+  async function runTopFiles(overridePath = '') {
+    const target = overridePath || targetPathInput.value;
     if (!target) {
-      appendLog('Please select a folder first.', 'error');
+      printLine("[-] Please select a folder.", 'red');
       return;
     }
 
-    appendLog(`Scanning for empty subfolders in: ${target}`, 'info');
+    const timestamp = new Date().toLocaleTimeString();
+    printLine(`\n[${timestamp}] [*] Top 10 Largest Files in: ${target}`, 'blue');
+    printLine("────────────────────────────────────────────────────────────────", 'muted');
+
+    const res = await apiCall('scan', { path: target });
+    if (res.success && res.top_files.length > 0) {
+      res.top_files.forEach((f, idx) => {
+        printLine(`  #${String(idx + 1).padEnd(2)} ${f.formatted_size.padEnd(10)}  ${f.name}  --> (${f.category})`, 'text');
+      });
+      printLine("────────────────────────────────────────────────────────────────\n", 'muted');
+    }
+  }
+
+  async function cleanEmpty(overridePath = '') {
+    const target = overridePath || targetPathInput.value;
+    if (!target) {
+      printLine("[-] Please select a folder.", 'red');
+      return;
+    }
+
+    const timestamp = new Date().toLocaleTimeString();
+    printLine(`\n[${timestamp}] [*] Scanning for empty subdirectories in: ${target}`, 'blue');
     const res = await apiCall('clean-empty', { path: target });
 
     if (res.success) {
       if (res.removed.length === 0) {
-        appendLog('No empty subfolders found.', 'warning');
+        printLine(`[${timestamp}] [!] No empty subdirectories found.`, 'amber');
       } else {
-        appendLog(`Cleaned ${res.removed.length} empty subfolder(s).`, 'success');
+        res.removed.forEach(d => printLine(`  [REMOVED] Empty folder: ${d}`, 'red'));
+        printLine(`[${timestamp}] [+] Cleaned ${res.removed.length} empty subfolder(s).\n`, 'green');
       }
     }
-  });
+  }
 
-  // Undo Last Move
-  undoBtn.addEventListener('click', async () => {
-    appendLog('Undoing last file movement...', 'warning');
+  async function undoLast() {
+    printLine("\n[*] Undoing last file movement...", 'purple');
     const res = await apiCall('undo');
-
     if (res.success && res.undone.length > 0) {
-      res.undone.forEach(f => appendLog(`Restored file: ${f}`, 'success'));
-      runScan(targetPathInput.value);
+      res.undone.forEach(name => printLine(`  [UNDONE] Restored: ${name}`, 'green'));
     } else {
-      appendLog('Nothing to undo.', 'warning');
+      printLine("[!] Nothing to undo.", 'amber');
+    }
+  }
+
+  async function showHistory() {
+    const res = await apiCall('history');
+    if (res.success && res.records.length > 0) {
+      printLine("\n=== RECENT MOVE HISTORY ===", 'purple');
+      res.records.forEach(r => {
+        printLine(`  #${r.id} | ${r.src.split(/[\\\\/]/).pop()} ──> ${r.dest.split(/[\\\\/]/).pop()} [${r.timestamp}]`, 'text');
+      });
+      printLine("===========================\n", 'purple');
+    } else {
+      printLine("[!] No move history recorded.", 'amber');
+    }
+  }
+
+  function showHelp() {
+    const helpText = `
+======================= COMMAND REFERENCE =======================
+  scan [path]        Directory category & size breakdown
+  top-files [path]   Show 10 largest files in directory
+  sort [path]        Organize files in directory
+  dry-run [path]     Simulate sort without moving files
+  clean-empty [path] Detect and remove empty subfolders
+  browse             Open Windows folder picker dialog
+  history            Show recent move history
+  undo               Undo last move
+  clear              Clear terminal log screen
+=================================================================
+`;
+    printLine(helpText, 'amber');
+  }
+
+  // Bind Buttons
+  browseBtn.addEventListener('click', browseFolder);
+  organizeBtn.addEventListener('click', () => runSort(false));
+  dryRunBtn.addEventListener('click', () => runSort(true));
+  scanBtn.addEventListener('click', () => runScan());
+  topFilesBtn.addEventListener('click', () => runTopFiles());
+  cleanEmptyBtn.addEventListener('click', () => cleanEmpty());
+  undoBtn.addEventListener('click', undoLast);
+  historyBtn.addEventListener('click', showHistory);
+  clearBtn.addEventListener('click', clearTerminal);
+  helpBtn.addEventListener('click', showHelp);
+
+  // Command Prompt Input Handler
+  cmdInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const raw = cmdInput.value.trim();
+      cmdInput.value = '';
+      if (!raw) return;
+
+      const timestamp = new Date().toLocaleTimeString();
+      printLine(`\n[${timestamp}] smartsort $ ${raw}`, 'green');
+
+      const parts = raw.split(/\s+/);
+      const cmd = parts[0].lowerCase || parts[0].toLowerCase();
+      const arg = parts.slice(1).join(' ');
+
+      if (cmd === 'help' || cmd === '?') showHelp();
+      else if (cmd === 'sort' || cmd === 'run' || cmd === 'organize') runSort(false, arg);
+      else if (cmd === 'dry-run' || cmd === 'dryrun' || cmd === 'sim') runSort(true, arg);
+      else if (cmd === 'scan' || cmd === 'analyze') runScan(arg);
+      else if (cmd === 'top-files' || cmd === 'topfiles' || cmd === 'largest') runTopFiles(arg);
+      else if (cmd === 'clean-empty' || cmd === 'clean' || cmd === 'rmdir') cleanEmpty(arg);
+      else if (cmd === 'browse' || cmd === 'select') browseFolder();
+      else if (cmd === 'history') showHistory();
+      else if (cmd === 'undo') undoLast();
+      else if (cmd === 'clear' || cmd === 'cls') clearTerminal();
+      else printLine(`[-] Unknown command '${cmd}'. Type 'help' for available commands.`, 'red');
     }
   });
 
-  // Fetch History
-  async function fetchHistory() {
-    const res = await apiCall('history');
-    const historyTable = document.getElementById('historyTable');
-    historyTable.innerHTML = '';
-
-    if (res.success && res.records.length > 0) {
-      res.records.forEach(r => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>#${r.id}</td>
-          <td class="font-mono">${r.src}</td>
-          <td class="font-mono">${r.dest}</td>
-          <td>${r.timestamp}</td>
-          <td><button class="btn-sm btn-outline undo-single-btn" data-id="${r.id}">Undo</button></td>
-        `;
-        historyTable.appendChild(tr);
-      });
-    } else {
-      historyTable.innerHTML = '<tr><td colspan="5" class="empty-placeholder">No history records found.</td></tr>';
-    }
-  }
-
-  if (refreshHistoryBtn) {
-    refreshHistoryBtn.addEventListener('click', fetchHistory);
-  }
+  // Print initial banner
+  printBanner();
 });
