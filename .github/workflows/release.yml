@@ -24,24 +24,24 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install customtkinter darkdetect pyinstaller filetype
+          pip install pyinstaller filetype pywebview pyyaml pythonnet
 
       - name: Build Executable
         run: |
-          python -m PyInstaller --name SmartSort --onefile --windowed --add-data "config;config" --add-data "smartsort;smartsort" --hidden-import filetype --hidden-import PIL --hidden-import yaml --hidden-import customtkinter --hidden-import darkdetect --hidden-import smartsort --hidden-import smartsort.classifier --hidden-import smartsort.rules --hidden-import smartsort.history --hidden-import smartsort.dedupe --hidden-import smartsort.watcher --collect-all filetype --collect-all customtkinter --clean -y tui.py
+          python -m PyInstaller --clean -y SmartSort.spec
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           files: dist/SmartSort.exe
-          name: SmartSort v1.0.0
+          name: SmartSort ${{ github.ref_name }}
           body: |
-            ## SmartSort v1.0.0 Release 🎉
+            ## SmartSort ${{ github.ref_name }} Release 🎉
             
-            - **Intelligent File Organization**: Sorts audio, documents, installers, images, videos, code, and design files automatically.
-            - **Duplicate Handling**: Automatically moves duplicate files to a dedicated `Duplicates` folder.
-            - **Sleek Terminal GUI**: Built with CustomTkinter for a clean terminal-style interface with direct folder selection.
-            - **Undo System**: Easily revert file moves.
+            - **C-Level Fast Win32 Drive Scanner**: Ultra-fast multi-gigabyte scanning across 100+ GB drives (`C:\`, `D:\`) with 12-thread parallelism.
+            - **Non-Blocking Multithreaded Engine**: Powered by `ThreadingHTTPServer` so the app interface never freezes.
+            - **Modern Slate Dark UI**: Sleek Linear/Raycast dark theme with live activity feed, subfolder storage breakdown, and dry-run preview.
+            - **Silent Folder Selection**: Native dialogs launch silently without background console popups.
             
             ### Download
             Download `SmartSort.exe` below and double-click to launch!
