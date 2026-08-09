@@ -4,7 +4,7 @@ from PyInstaller.utils.hooks import collect_all
 datas = [('config', 'config'), ('smartsort', 'smartsort'), ('web', 'web')]
 binaries = []
 hiddenimports = [
-    'server', 'webview', 'clr', 'pythonnet', 'filetype', 'PIL', 'yaml', 
+    'server', 'smartsort.server', 'webview', 'clr', 'pythonnet', 'filetype', 'PIL', 'yaml', 
     'smartsort', 'smartsort.classifier', 'smartsort.rules', 
     'smartsort.history', 'smartsort.dedupe', 'smartsort.watcher', 
     'smartsort.cleaner', 'smartsort.analyzer'

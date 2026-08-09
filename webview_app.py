@@ -1,7 +1,7 @@
 import os
 import sys
 import webview
-from server import bind_and_run_server, get_base_dir, open_in_explorer, delete_to_recycle_bin
+from smartsort.server import bind_and_run_server, get_base_dir, open_in_explorer, delete_to_recycle_bin
 
 class DesktopAPI:
     def browse_folder(self):
