@@ -54,19 +54,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function apiCall(endpoint, data = null) {
-    try {
-      const options = {
-        method: data ? 'POST' : 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      };
-      if (data) options.body = JSON.stringify(data);
+  async function apiCall(endpoint, data = null, retries = 2) {
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        const options = {
+          method: data ? 'POST' : 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        };
+        if (data) options.body = JSON.stringify(data);
 
-      const res = await fetch(`/api/${endpoint}`, options);
-      return await res.json();
-    } catch (err) {
-      setStatus('Network Error: Server Unreachable', false);
-      return { success: false, error: err.message };
+        const res = await fetch(`/api/${endpoint}`, options);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } catch (err) {
+        if (attempt < retries) {
+          await new Promise(r => setTimeout(r, 350));
+          continue;
+        }
+        setStatus('Local Engine Disconnected', false);
+        return { success: false, error: err.message };
+      }
     }
   }
 
