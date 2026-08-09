@@ -19,6 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const navItems = document.querySelectorAll('.nav-item[data-view]');
   const actionBtns = document.querySelectorAll('.ribbon-btn, .btn-primary');
 
+  // ── Context Menu Elements ──
+  const contextMenu = document.getElementById('contextMenu');
+  const menuItemTitle = document.getElementById('menuItemTitle');
+  const menuOpenLocation = document.getElementById('menuOpenLocation');
+  const menuCopyPath = document.getElementById('menuCopyPath');
+  const menuDeleteItem = document.getElementById('menuDeleteItem');
+  let activeItemPath = '';
+
   // ── Status Helper ──
   function setStatus(text, busy = false) {
     statusText.textContent = text;
@@ -46,160 +54,234 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // ── Welcome View ──
-  function renderWelcome() {
-    contentArea.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-          </svg>
-        </div>
-        <h3>Select a folder to organize</h3>
-        <p>Choose a target directory using the Browse Folder button above, then scan or organize your files.</p>
-      </div>
-    `;
-  }
-
-  // ── Documentation View ──
-  function renderDocumentation() {
-    setStatus('Documentation', false);
-    contentArea.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px;">
-        <div style="border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
-          <h2 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">SmartSort User Manual & Workflow Guide</h2>
-          <p style="color: var(--text-muted); font-size: 13px;">Complete step-by-step visual workflow for organizing your files safely.</p>
-        </div>
-
-        <!-- Step 1 Card -->
-        <div class="metric-card" style="padding: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span class="badge accent" style="font-size: 12px; padding: 4px 10px;">Step 1</span>
-            <h3 style="font-size: 15px; font-weight: 600;">Select Target Directory</h3>
-          </div>
-          <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 12px;">
-            Click the <strong style="color: var(--text-primary);">Browse Folder</strong> button in the top bar to open the Windows folder browser dialog. Choose any directory (e.g. <code>Downloads</code>, <code>Desktop</code>, or <code>Unsorted</code>) you wish to clean up.
-          </p>
-          <div class="folder-selector" style="max-width: 100%; pointer-events: none; opacity: 0.85;">
-            <span class="icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-            </span>
-            <input type="text" value="C:/Users/Downloads" readonly />
-            <button class="btn-secondary" style="height: 28px; font-size: 11px;">Browse Folder</button>
-          </div>
-        </div>
-
-        <!-- Step 2 Card -->
-        <div class="metric-card" style="padding: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span class="badge accent" style="font-size: 12px; padding: 4px 10px;">Step 2</span>
-            <h3 style="font-size: 15px; font-weight: 600;">Scan Storage Breakdown</h3>
-          </div>
-          <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 12px;">
-            Click <strong style="color: var(--text-primary);">Scan Directory</strong> to inspect category size breakdown and find your largest files before moving anything. SmartSort classifies files by content signature (file magic bytes), not just extensions.
-          </p>
-          <div class="metrics-grid" style="margin-bottom: 0;">
-            <div class="metric-card" style="background: var(--bg-surface-raised);">
-              <div class="label">Total Size</div>
-              <div class="value" style="font-size: 18px;">14.2 GB</div>
-            </div>
-            <div class="metric-card" style="background: var(--bg-surface-raised);">
-              <div class="label">Total Files</div>
-              <div class="value" style="font-size: 18px;">342</div>
-            </div>
-            <div class="metric-card" style="background: var(--bg-surface-raised);">
-              <div class="label">Categories</div>
-              <div class="value" style="font-size: 18px;">6</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3 Card -->
-        <div class="metric-card" style="padding: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span class="badge accent" style="font-size: 12px; padding: 4px 10px;">Step 3</span>
-            <h3 style="font-size: 15px; font-weight: 600;">Test with Dry Run (Simulation)</h3>
-          </div>
-          <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6; margin-bottom: 12px;">
-            Click <strong style="color: var(--text-primary);">Dry Run (Test)</strong> to simulate rule execution safely. SmartSort will show you exactly where each file would be moved without modifying any files on disk.
-          </p>
-          <div style="background: var(--bg-surface-raised); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); padding: 12px; font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary);">
-            [SIMULATION] Sample_Report.pdf ──> Documents/Sample_Report.pdf<br>
-            [SIMULATION] Photo_2026.jpg ──> Photos/2026/08/Photo_2026.jpg (EXIF Date)
-          </div>
-        </div>
-
-        <!-- Step 4 Card -->
-        <div class="metric-card" style="padding: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span class="badge accent" style="font-size: 12px; padding: 4px 10px;">Step 4</span>
-            <h3 style="font-size: 15px; font-weight: 600;">Organize Files Automatically</h3>
-          </div>
-          <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-            Click <strong style="color: var(--text-primary);">Organize Files</strong> to execute sorting. Files are grouped into clean subfolders (Documents, Photos by EXIF year/month, Installers, Videos, Music) and exact duplicates are automatically detected and skipped.
-          </p>
-        </div>
-
-        <!-- Step 5 Card -->
-        <div class="metric-card" style="padding: 20px;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
-            <span class="badge accent" style="font-size: 12px; padding: 4px 10px;">Step 5</span>
-            <h3 style="font-size: 15px; font-weight: 600;">History & One-Click Undo</h3>
-          </div>
-          <p style="color: var(--text-secondary); font-size: 13px; line-height: 1.6;">
-            Every file move is logged into an internal SQLite database. Click <strong style="color: var(--text-primary);">Undo</strong> or visit the <strong style="color: var(--text-primary);">History & Undo</strong> tab anytime to restore moved files to their original location.
-          </p>
-        </div>
-      </div>
-    `;
-  }
-
-  // ── API Call Helper ──
-  async function apiCall(endpoint, payload = {}) {
+  async function apiCall(endpoint, data = null) {
     try {
-      let port = window.API_PORT || window.location.port || 7860;
-      if (window.pywebview && window.pywebview.api && window.pywebview.api.get_api_port) {
-        try {
-          const apiPort = await window.pywebview.api.get_api_port();
-          if (apiPort) port = apiPort;
-        } catch (e) {}
-      }
+      const options = {
+        method: data ? 'POST' : 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      };
+      if (data) options.body = JSON.stringify(data);
 
-      const baseUrl = window.location.protocol.startsWith('http') ? '' : `http://127.0.0.1:${port}`;
-      const res = await fetch(`${baseUrl}/api/${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const text = await res.text();
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch (e) {
-        throw new Error(`Server returned invalid response (${res.status})`);
-      }
-      if (!res.ok) {
-        throw new Error(data.error || `HTTP Error ${res.status}`);
-      }
-      return data;
+      const res = await fetch(`/api/${endpoint}`, options);
+      return await res.json();
     } catch (err) {
-      setLoading(false);
-      setStatus('Error', false);
-      renderMessage('Error', `Operation failed: ${err.message}`);
+      setStatus('Network Error: Server Unreachable', false);
       return { success: false, error: err.message };
     }
   }
 
-  function renderMessage(title, text) {
-    contentArea.innerHTML = `
-      <div class="data-table-container" style="padding: 20px;">
-        <h4 style="margin-bottom: 6px; font-weight: 600;">${title}</h4>
-        <p style="color: var(--text-secondary); font-size: 13px;">${text}</p>
+  // ── WizTree Context Menu & Item Action Handlers ──
+  function hideContextMenu() {
+    if (contextMenu) contextMenu.classList.add('hidden');
+    activeItemPath = '';
+  }
+
+  function showContextMenu(e, itemPath, titleName) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!itemPath || !contextMenu) return;
+
+    activeItemPath = itemPath;
+    menuItemTitle.textContent = titleName || itemPath.split(/[/\\]/).pop();
+
+    contextMenu.classList.remove('hidden');
+
+    let x = e.clientX;
+    let y = e.clientY;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const menuWidth = 220;
+    const menuHeight = 140;
+
+    if (x + menuWidth > windowWidth) x = windowWidth - menuWidth - 10;
+    if (y + menuHeight > windowHeight) y = windowHeight - menuHeight - 10;
+
+    contextMenu.style.left = `${Math.max(10, x)}px`;
+    contextMenu.style.top = `${Math.max(10, y)}px`;
+  }
+
+  document.addEventListener('click', hideContextMenu);
+  document.addEventListener('contextmenu', (e) => {
+    if (!e.target.closest('[data-path]')) hideContextMenu();
+  });
+
+  window.openLocation = async function(path) {
+    if (!path) return;
+    setStatus(`Opening Explorer for ${path.split(/[/\\]/).pop()}...`, true);
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.open_location) {
+      await window.pywebview.api.open_location(path);
+    } else {
+      await apiCall('open-location', { path: path });
+    }
+    setStatus('Explorer opened', false);
+  };
+
+  window.deleteItem = async function(path) {
+    if (!path) return;
+    const itemName = path.split(/[/\\]/).pop();
+    if (!confirm(`Are you sure you want to send "${itemName}" to the Recycle Bin?`)) return;
+
+    setStatus(`Sending ${itemName} to Recycle Bin...`, true);
+    let success = false;
+    if (window.pywebview && window.pywebview.api && window.pywebview.api.delete_item) {
+      success = await window.pywebview.api.delete_item(path);
+    } else {
+      const res = await apiCall('delete-item', { path: path });
+      success = res.success;
+    }
+
+    if (success) {
+      setStatus(`Sent "${itemName}" to Recycle Bin`, false);
+      const activeNav = document.querySelector('.nav-item.active');
+      if (activeNav) {
+        const view = activeNav.getAttribute('data-view');
+        if (view === 'overview') runScan();
+        else if (view === 'organize') runSort(false);
+      } else {
+        runScan();
+      }
+    } else {
+      setStatus(`Failed to delete "${itemName}"`, false);
+    }
+  };
+
+  if (menuOpenLocation) {
+    menuOpenLocation.addEventListener('click', () => {
+      if (activeItemPath) window.openLocation(activeItemPath);
+      hideContextMenu();
+    });
+  }
+
+  if (menuCopyPath) {
+    menuCopyPath.addEventListener('click', () => {
+      if (!activeItemPath) return;
+      navigator.clipboard.writeText(activeItemPath);
+      setStatus('Full path copied to clipboard', false);
+      hideContextMenu();
+    });
+  }
+
+  if (menuDeleteItem) {
+    menuDeleteItem.addEventListener('click', () => {
+      if (activeItemPath) window.deleteItem(activeItemPath);
+      hideContextMenu();
+    });
+  }
+
+  // Event delegation for right click on table rows
+  contentArea.addEventListener('contextmenu', (e) => {
+    const row = e.target.closest('[data-path]');
+    if (row) {
+      const path = row.getAttribute('data-path');
+      const title = row.getAttribute('data-title');
+      showContextMenu(e, path, title);
+    }
+  });
+
+  // Action buttons HTML generator
+  function renderRowActions(path) {
+    if (!path) return '';
+    const safePath = path.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    return `
+      <div class="row-actions">
+        <button class="action-icon-btn" title="Reveal in File Explorer" onclick="event.stopPropagation(); window.openLocation('${safePath}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><line x1="12" y1="11" x2="12" y2="17"/><polyline points="9 14 12 11 15 14"/></svg>
+        </button>
+        <button class="action-icon-btn danger" title="Send to Recycle Bin" onclick="event.stopPropagation(); window.deleteItem('${safePath}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>
       </div>
     `;
   }
 
-  // ── Actions ──
+  // ── Welcome View ──
+  function renderWelcome() {
+    contentArea.innerHTML = `
+      <div class="welcome-card">
+        <div class="app-brand-logo" style="width: 56px; height: 56px; margin: 0 auto 16px auto; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+          <img src="SS_1.png" alt="SmartSort" style="width: 38px; height: 38px; object-fit: contain;">
+        </div>
+        <h2>Welcome to SmartSort</h2>
+        <p>Intelligent file organization, storage inspection, and WizTree-style file management built for maximum performance.</p>
+
+        <div class="welcome-steps">
+          <div class="welcome-step">
+            <div class="step-num">1</div>
+            <div>
+              <strong>Browse Directory</strong>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Select target drive or folder using native Windows picker.</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">2</div>
+            <div>
+              <strong>Scan Breakdown & Manage Files</strong>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Inspect subfolder sizes and right-click files/folders to delete or reveal in Explorer.</div>
+            </div>
+          </div>
+          <div class="welcome-step">
+            <div class="step-num">3</div>
+            <div>
+              <strong>Organize Safely</strong>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">Sort files by EXIF dates, extensions, or rules with 1-click Undo.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ── User Documentation View ──
+  function renderDocumentation() {
+    contentArea.innerHTML = `
+      <div class="welcome-card" style="text-align: left; max-width: 800px;">
+        <h2 style="margin-bottom: 8px;">SmartSort User Guide & Features</h2>
+        <p style="margin-bottom: 24px;">Complete reference for managing your storage, scanning subdirectories, and organizing files.</p>
+
+        <div class="welcome-steps" style="grid-template-columns: 1fr;">
+          <div class="welcome-step">
+            <div class="step-num">1</div>
+            <div>
+              <strong>Target Folder Selection</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Click <code>Browse Folder</code> in the top bar to choose any directory or drive (e.g. <code>C:\</code>, <code>D:\</code>, <code>Downloads</code>).</p>
+            </div>
+          </div>
+
+          <div class="welcome-step">
+            <div class="step-num">2</div>
+            <div>
+              <strong>WizTree-Style Context Menu & Quick Delete</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Right-click any subfolder or file in the scanner tables to <strong>Reveal in Explorer</strong>, <strong>Copy Path</strong>, or <strong>Send to Recycle Bin</strong>.</p>
+            </div>
+          </div>
+
+          <div class="welcome-step">
+            <div class="step-num">3</div>
+            <div>
+              <strong>C-Level Win32 Drive Scanning</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Click <code>Scan Directory</code> to inspect total size, file counts, and subfolder storage share across all CPU cores.</p>
+            </div>
+          </div>
+
+          <div class="welcome-step">
+            <div class="step-num">4</div>
+            <div>
+              <strong>Dry Run & Safe Organization</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Run <code>Dry Run</code> to preview move operations without altering files, or click <code>Organize Files</code> to execute automatic rule sorting.</p>
+            </div>
+          </div>
+
+          <div class="welcome-step">
+            <div class="step-num">5</div>
+            <div>
+              <strong>Transaction History & Undo</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Click <code>Undo</code> in the ribbon bar anytime to revert recent file moves safely from the SQLite database log.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   // 1. Browse Folder
   async function browseFolder() {
@@ -222,6 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedPath) {
       targetPathInput.value = selectedPath;
       setStatus('Target directory set', false);
+      runScan();
     } else {
       setStatus('Ready', false);
     }
@@ -231,7 +314,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function runScan() {
     const target = targetPathInput.value;
     if (!target) {
-      renderMessage('Select Directory First', 'Please click Browse Folder to choose a directory before scanning.');
+      renderWelcome();
       return;
     }
 
@@ -243,7 +326,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (res.total_files === 0 && (!res.subfolders || res.subfolders.length === 0)) {
       setStatus('Scan complete', false);
-      renderMessage('Empty Directory', 'No files or subfolders found in the target directory.');
+      contentArea.innerHTML = `
+        <div class="welcome-card">
+          <h2>Empty Directory</h2>
+          <p>No files or subfolders found in <code>${target}</code>.</p>
+        </div>
+      `;
       return;
     }
 
@@ -273,12 +361,13 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalSubfolderSize = 0;
     if (res.subfolders && res.subfolders.length > 0) {
       res.subfolders.forEach(sub => totalSubfolderSize += sub.size);
-      
+
       res.subfolders.forEach(sub => {
         const pct = totalSubfolderSize > 0 ? ((sub.size / totalSubfolderSize) * 100) : 0;
+        const subPath = target.replace(/[/\\]$/, '') + '\\' + sub.name;
         folderRows += `
-          <tr>
-            <td style="font-weight: 600; font-family:var(--font-mono); display:flex; align-items:center; gap:8px;">
+          <tr data-path="${subPath.replace(/"/g, '&quot;')}" data-title="${sub.name}">
+            <td style="font-weight: 600; font-family:var(--font-mono);">
               <span style="color:var(--accent-light);">📁</span> ${sub.name}/
             </td>
             <td><span class="badge accent">${sub.count.toLocaleString()} items</span></td>
@@ -289,6 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <span style="font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${pct.toFixed(1)}%</span>
               </div>
             </td>
+            <td style="text-align:right;">${renderRowActions(subPath)}</td>
           </tr>
         `;
       });
@@ -314,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div class="data-table-container" style="margin-bottom: 24px;">
         <div class="table-title">
           <span>Subfolders & Storage Explorer</span>
-          <span style="font-weight:normal; font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${res.subfolders.length} subdirectories</span>
+          <span style="font-weight:normal; font-family:var(--font-mono); font-size:11px; color:var(--text-muted);">${res.subfolders.length} subdirectories (Right-click to manage)</span>
         </div>
         <table class="data-table">
           <thead>
@@ -323,6 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>Total Files</th>
               <th>Storage Size</th>
               <th>Subfolder Share</th>
+              <th style="text-align:right;">Actions</th>
             </tr>
           </thead>
           <tbody>${folderRows}</tbody>
@@ -354,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function runSort(dryRun = false) {
     const target = targetPathInput.value;
     if (!target) {
-      renderMessage('Select Directory First', 'Please click Browse Folder to choose a directory first.');
+      renderWelcome();
       return;
     }
 
@@ -384,18 +475,21 @@ document.addEventListener('DOMContentLoaded', () => {
           destDisplay = item.reason || 'Skipped';
         }
 
+        const itemPath = item.destination || (target.replace(/[/\\]$/, '') + '\\' + item.file);
+
         itemRows += `
-          <tr>
+          <tr data-path="${itemPath.replace(/"/g, '&quot;')}" data-title="${item.file}">
             <td style="font-family:var(--font-mono); color:var(--text-muted); width:40px;">#${idx + 1}</td>
             <td>${statusBadge}</td>
             <td style="font-family:var(--font-mono); font-weight:600; color:var(--text-primary);">${item.file || 'File'}</td>
             <td style="font-family:var(--font-mono); color:var(--accent-light);">→ ${destDisplay}</td>
             <td><span class="badge" style="font-size:11px;">${item.rule || 'Default'}</span></td>
+            <td style="text-align:right;">${renderRowActions(itemPath)}</td>
           </tr>
         `;
       });
     } else {
-      itemRows = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">No files found to organize.</td></tr>`;
+      itemRows = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No files found to organize.</td></tr>`;
     }
 
     contentArea.innerHTML = `
@@ -431,6 +525,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>File Name</th>
               <th>Destination Path</th>
               <th>Rule Applied</th>
+              <th style="text-align:right;">Actions</th>
             </tr>
           </thead>
           <tbody>${itemRows}</tbody>
@@ -443,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function runTopFiles() {
     const target = targetPathInput.value;
     if (!target) {
-      renderMessage('Select Directory First', 'Please click Browse Folder to choose a directory first.');
+      renderWelcome();
       return;
     }
 
@@ -453,7 +548,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!res.success || !res.top_files || res.top_files.length === 0) {
       setStatus('No files found', false);
-      renderMessage('No Files Found', 'No files in directory.');
+      contentArea.innerHTML = `
+        <div class="welcome-card">
+          <h2>No Files Found</h2>
+          <p>No large files located in <code>${target}</code>.</p>
+        </div>
+      `;
       return;
     }
 
@@ -461,19 +561,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rows = '';
     res.top_files.forEach((f, idx) => {
+      const fullPath = target.replace(/[/\\]$/, '') + '\\' + f.name;
       rows += `
-        <tr>
+        <tr data-path="${fullPath.replace(/"/g, '&quot;')}" data-title="${f.name}">
           <td style="font-family:var(--font-mono); color:var(--text-muted); width:40px;">#${idx + 1}</td>
           <td style="font-family:var(--font-mono); font-weight:600;">${f.name}</td>
           <td><span class="badge accent">${f.formatted_size}</span></td>
           <td style="color:var(--text-muted);">${f.category}</td>
+          <td style="text-align:right;">${renderRowActions(fullPath)}</td>
         </tr>
       `;
     });
 
     contentArea.innerHTML = `
       <div class="data-table-container">
-        <div class="table-title">Top 10 Largest Files</div>
+        <div class="table-title">Top 10 Largest Files (Right-click or use actions to open/delete)</div>
         <table class="data-table">
           <thead>
             <tr>
@@ -481,6 +583,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>File Name</th>
               <th>Size</th>
               <th>Category</th>
+              <th style="text-align:right;">Actions</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
@@ -493,7 +596,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function cleanEmpty() {
     const target = targetPathInput.value;
     if (!target) {
-      renderMessage('Select Directory First', 'Please click Browse Folder to choose a directory first.');
+      renderWelcome();
       return;
     }
 
@@ -501,31 +604,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await apiCall('clean-empty', { path: target });
     setLoading(false);
 
-    if (!res.success) return;
+    if (res.success) {
+      setStatus(`Cleaned ${res.removed.length} empty folders`, false);
+      let listItems = '';
+      if (res.removed.length > 0) {
+        res.removed.forEach(folder => {
+          listItems += `<li>📁 ${folder}</li>`;
+        });
+      } else {
+        listItems = `<li>No empty folders were found.</li>`;
+      }
 
-    if (res.removed.length === 0) {
-      setStatus('No empty subfolders', false);
-      renderMessage('Clean Empty Folders', 'No empty subdirectories found in selected directory.');
-    } else {
-      setStatus(`Removed ${res.removed.length} folder(s)`, false);
-      renderMessage('Clean Complete', `Successfully removed ${res.removed.length} empty subfolder(s).`);
+      contentArea.innerHTML = `
+        <div class="welcome-card" style="text-align:left;">
+          <h2>Clean Empty Folders Result</h2>
+          <p>Removed <strong>${res.removed.length}</strong> empty subdirectories.</p>
+          <ul style="margin-top:12px; font-family:var(--font-mono); font-size:12px; line-height:1.8; color:var(--text-muted); max-height:300px; overflow-y:auto; padding-left:16px;">
+            ${listItems}
+          </ul>
+        </div>
+      `;
     }
   }
 
-  // 6. Undo Last
+  // 6. Undo Last Move
   async function undoLast() {
-    setLoading(true, 'Reverting last move...');
+    setLoading(true, 'Reverting last operations...');
     const res = await apiCall('undo');
     setLoading(false);
 
-    if (!res.success) return;
-
-    if (res.undone && res.undone.length > 0) {
-      setStatus('Undo complete', false);
-      renderMessage('Undo Successful', `Restored ${res.undone.length} file(s) to original location.`);
-    } else {
-      setStatus('Nothing to undo', false);
-      renderMessage('Undo History', 'No file movement history available to undo.');
+    if (res.success) {
+      if (res.undone && res.undone.length > 0) {
+        setStatus(`Reverted ${res.undone.length} files`, false);
+        contentArea.innerHTML = `
+          <div class="welcome-card" style="text-align:left;">
+            <h2>Undo Operation Successful</h2>
+            <p>Reverted <strong>${res.undone.length}</strong> files back to original paths.</p>
+          </div>
+        `;
+      } else {
+        setStatus('Nothing to undo', false);
+        contentArea.innerHTML = `
+          <div class="welcome-card">
+            <h2>Nothing to Undo</h2>
+            <p>No recent file moves recorded in transaction log.</p>
+          </div>
+        `;
+      }
     }
   }
 
@@ -536,30 +661,36 @@ document.addEventListener('DOMContentLoaded', () => {
     setLoading(false);
 
     if (!res.success || !res.records || res.records.length === 0) {
-      setStatus('No history', false);
-      renderMessage('Move History', 'No move history recorded yet.');
+      setStatus('History empty', false);
+      contentArea.innerHTML = `
+        <div class="welcome-card">
+          <h2>No History Found</h2>
+          <p>No file moves have been recorded yet.</p>
+        </div>
+      `;
       return;
     }
 
-    setStatus(`${res.records.length} records loaded`, false);
+    setStatus('History loaded', false);
 
     let rows = '';
     res.records.forEach(r => {
-      const srcName = r.src.replace(/\\/g, '/').split('/').pop();
-      const destName = r.dest.replace(/\\/g, '/').split('/').pop();
+      const srcName = r.src.split(/[/\\]/).pop();
+      const destName = r.dest.split(/[/\\]/).pop();
       rows += `
-        <tr>
+        <tr data-path="${r.dest.replace(/"/g, '&quot;')}" data-title="${destName}">
           <td style="font-family:var(--font-mono); color:var(--text-muted);">${r.id}</td>
           <td style="font-family:var(--font-mono);">${srcName}</td>
           <td style="font-family:var(--font-mono); color:var(--accent-light);">→ ${destName}</td>
           <td style="font-family:var(--font-mono); color:var(--text-muted); font-size:11px;">${r.timestamp}</td>
+          <td style="text-align:right;">${renderRowActions(r.dest)}</td>
         </tr>
       `;
     });
 
     contentArea.innerHTML = `
       <div class="data-table-container">
-        <div class="table-title">Recent Move History</div>
+        <div class="table-title">Recent Move Transaction History</div>
         <table class="data-table">
           <thead>
             <tr>
@@ -567,6 +698,7 @@ document.addEventListener('DOMContentLoaded', () => {
               <th>Source File</th>
               <th>Destination</th>
               <th>Timestamp</th>
+              <th style="text-align:right;">Actions</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>

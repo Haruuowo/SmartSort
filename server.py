@@ -47,9 +47,63 @@ def select_folder_native() -> str:
         folder = filedialog.askdirectory(title="Select Target Folder to Organize")
         root.destroy()
         return folder or ""
+def open_in_explorer(path: str) -> bool:
+    if not path or not os.path.exists(path):
+        return False
+    path = os.path.normpath(path)
+    try:
+        import subprocess
+        if os.path.isfile(path):
+            subprocess.run(['explorer.exe', '/select,', path])
+        else:
+            os.startfile(path)
+        return True
     except Exception as e:
-        print(f"Tkinter folder picker error: {e}")
-        return ""
+        print(f"Open explorer error: {e}")
+        return False
+
+def delete_to_recycle_bin(path: str) -> bool:
+    if not path or not os.path.exists(path):
+        return False
+    path = os.path.normpath(path)
+    try:
+        if sys.platform == 'win32':
+            import ctypes
+            from ctypes import wintypes
+            shell32 = ctypes.windll.shell32
+            FO_DELETE = 0x0003
+            FOF_ALLOWUNDO = 0x0040
+            FOF_NOCONFIRMATION = 0x0010
+
+            class SHFILEOPSTRUCTW(ctypes.Structure):
+                _fields_ = [
+                    ("hwnd", wintypes.HWND),
+                    ("wFunc", wintypes.UINT),
+                    ("pFrom", wintypes.LPCWSTR),
+                    ("pTo", wintypes.LPCWSTR),
+                    ("fFlags", wintypes.WORD),
+                    ("fAnyOperationsAborted", wintypes.BOOL),
+                    ("hNameMappings", ctypes.c_void_p),
+                    ("lpszProgressTitle", wintypes.LPCWSTR)
+                ]
+
+            p_from = path + '\0\0'
+            fileop = SHFILEOPSTRUCTW()
+            fileop.wFunc = FO_DELETE
+            fileop.pFrom = p_from
+            fileop.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION
+            res = shell32.SHFileOperationW(ctypes.byref(fileop))
+            return res == 0
+        else:
+            if os.path.isfile(path):
+                os.remove(path)
+            else:
+                import shutil
+                shutil.rmtree(path)
+            return True
+    except Exception as e:
+        print(f"Recycle bin delete error: {e}")
+        return False
 
 class SmartSortRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
@@ -231,6 +285,18 @@ class SmartSortRequestHandler(BaseHTTPRequestHandler):
 
                 self._set_headers()
                 self.wfile.write(json.dumps({'success': True, 'records': fmt_records}).encode())
+
+            elif endpoint == '/api/open-location':
+                target_path = payload.get('path', '')
+                ok = open_in_explorer(target_path)
+                self._set_headers()
+                self.wfile.write(json.dumps({'success': ok}).encode())
+
+            elif endpoint == '/api/delete-item':
+                target_path = payload.get('path', '')
+                ok = delete_to_recycle_bin(target_path)
+                self._set_headers()
+                self.wfile.write(json.dumps({'success': ok}).encode())
 
             else:
                 self._set_headers(status=404)

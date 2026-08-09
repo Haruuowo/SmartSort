@@ -1,7 +1,7 @@
 import os
 import sys
 import webview
-from server import bind_and_run_server, get_base_dir
+from server import bind_and_run_server, get_base_dir, open_in_explorer, delete_to_recycle_bin
 
 class DesktopAPI:
     def browse_folder(self):
@@ -13,6 +13,12 @@ class DesktopAPI:
         except Exception as e:
             print(f"PyWebView browse error: {e}")
         return ""
+
+    def open_location(self, path):
+        return open_in_explorer(path)
+
+    def delete_item(self, path):
+        return delete_to_recycle_bin(path)
 
 def run_app():
     actual_port = bind_and_run_server(7860)
