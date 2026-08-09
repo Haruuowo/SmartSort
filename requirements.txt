@@ -1,6 +1,5 @@
+pywebview
 watchdog
-typer
-rich
 pyyaml
 filetype
 Pillow

@@ -2,9 +2,9 @@
 
 # SmartSort
 
-**An intelligent, rule-based file organizer with a terminal-style desktop UI.**
+**An intelligent, rule-based file organizer with a modern desktop dashboard UI.**
 
-Built with Python · CustomTkinter · SQLite
+Built with Python · PyWebView · HTML/CSS/JS · SQLite
 
 [![Python](https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
@@ -16,9 +16,9 @@ Built with Python · CustomTkinter · SQLite
 
 ## What is SmartSort?
 
-SmartSort is a desktop application that organizes your files into categorized folders. It uses content-based detection (not just file extensions), custom YAML rules, EXIF metadata for photos, and built-in deduplication — wrapped in a terminal-style GUI.
+SmartSort is a desktop application that organizes your files into categorized folders. It uses content-based detection (not just file extensions), custom YAML rules, EXIF metadata for photos, and built-in deduplication — wrapped in a sleek modern desktop dashboard.
 
-> No more manually sorting your Downloads folder. Point SmartSort at a directory, run `sort`, and it handles the rest.
+> No more manually sorting your Downloads folder. Point SmartSort at a directory, click **Organize**, and it handles the rest.
 
 ---
 
@@ -26,7 +26,7 @@ SmartSort is a desktop application that organizes your files into categorized fo
 
 | Feature | Description |
 |---|---|
-| Desktop GUI | Terminal-style interface — no actual terminal needed |
+| Modern Desktop Dashboard | Sleek web-based UI wrapped in PyWebView |
 | Smart Classification | Uses content signatures, not just file extensions |
 | EXIF-aware | Sorts photos by date taken (year/month) |
 | Deduplication | Detects and skips exact duplicate files |
@@ -49,27 +49,8 @@ SmartSort is a desktop application that organizes your files into categorized fo
 git clone https://github.com/Haruuowo/SmartSort.git
 cd SmartSort
 pip install -r requirements.txt
-python tui.py
+python Organizer.py
 ```
-
----
-
-## Commands
-
-The app uses a terminal-style prompt. Type these commands:
-
-| Command | Description |
-|---|---|
-| `sort <path>` | Organize files in a directory |
-| `dry-run <path>` | Simulate without moving files |
-| `sort` / `browse` | Opens a folder picker dialog |
-| `ls <path>` | List files in a directory |
-| `history` | Show recent move operations |
-| `undo` | Undo the last move |
-| `undo all` | Undo all recorded moves |
-| `clear` | Clear terminal output |
-| `pwd` | Print working directory |
-| `exit` | Quit |
 
 ---
 
@@ -102,12 +83,17 @@ rules:
 
 ```
 SmartSort/
-├── tui.py                  # Desktop GUI (terminal-style)
+├── Organizer.py            # Main App Entry Point
+├── webview_app.py          # PyWebView Launcher
+├── server.py               # Local HTTP API Server
 ├── config/
 │   └── rules.yaml          # Sorting rules
+├── web/                    # Dashboard UI Assets
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
 ├── smartsort/
 │   ├── classifier.py       # File classification engine
-│   ├── cli.py              # CLI interface
 │   ├── dedupe.py           # Duplicate detection
 │   ├── history.py          # SQLite undo system
 │   ├── rules.py            # YAML rule engine
@@ -115,8 +101,6 @@ SmartSort/
 ├── tests/
 │   ├── test_dedupe.py
 │   └── test_rules.py
-├── dist/
-│   └── SmartSort.exe       # Compiled executable
 └── requirements.txt
 ```
 
@@ -124,8 +108,8 @@ SmartSort/
 
 ## Tech Stack
 
-- **Python 3.11** — Core logic
-- **CustomTkinter** — Desktop GUI
+- **Python 3.11** — Core logic & API server
+- **PyWebView + HTML/CSS/JS** — Modern Desktop Dashboard UI
 - **SQLite** — Undo/history database
 - **Pillow** — EXIF metadata extraction
 - **filetype** — Content-based file detection

@@ -3,28 +3,34 @@ import sys
 import webview
 from server import bind_and_run_server, get_base_dir
 
+class DesktopAPI:
+    def browse_folder(self):
+        try:
+            if webview.windows and len(webview.windows) > 0:
+                res = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG)
+                if res and len(res) > 0:
+                    return res[0]
+        except Exception as e:
+            print(f"PyWebView browse error: {e}")
+        return ""
+
 def run_app():
-    # Synchronously bind local server to an available port
     actual_port = bind_and_run_server(7860)
+    url = f"http://127.0.0.1:{actual_port}"
+    print(f"SmartSort Engine loading UI from {url}")
 
-    html_file = os.path.join(get_base_dir(), 'web', 'index.html')
-    print(f"SmartSort Engine loading UI from {html_file} with API port {actual_port}")
+    api = DesktopAPI()
 
-    # Create PyWebView standalone desktop application window
-    window = webview.create_window(
-        title="SmartSort Engine",
-        url=html_file,
+    webview.create_window(
+        title="SmartSort",
+        url=url,
         width=1040,
         height=680,
         resizable=True,
         min_size=(840, 540),
-        background_color="#0d080e"
+        background_color="#09090b",
+        js_api=api
     )
-
-    def set_port():
-        window.evaluate_js(f"window.API_PORT = {actual_port};")
-
-    window.events.loaded += set_port
 
     webview.start()
 

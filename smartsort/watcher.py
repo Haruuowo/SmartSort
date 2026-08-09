@@ -2,12 +2,8 @@ import time
 import os
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from rich.console import Console
-from rich.table import Table
 
 from .classifier import FileClassifier
-
-console = Console()
 
 class SortEventHandler(FileSystemEventHandler):
     def __init__(self, classifier: FileClassifier, dry_run: bool = False):
@@ -35,19 +31,19 @@ class SortEventHandler(FileSystemEventHandler):
         
         if status == 'moved':
             dest = result.get('destination', '')
-            console.print(f"[green]✔ Moved[/green] [bold]{filename}[/bold] -> [cyan]{dest}[/cyan] (Rule: {rule})")
+            print(f"[✔ Moved] {filename} -> {dest} (Rule: {rule})")
         elif status == 'duplicate':
             reason = result.get('reason', '')
-            console.print(f"[yellow]⚠ Duplicate Skipped[/yellow] [bold]{filename}[/bold] (Reason: {reason})")
+            print(f"[⚠ Duplicate Skipped] {filename} (Reason: {reason})")
         else:
-            console.print(f"[red]✖ Error[/red] [bold]{filename}[/bold]: {result.get('reason', 'Unknown')}")
+            print(f"[✖ Error] {filename}: {result.get('reason', 'Unknown')}")
 
 def watch_directory(target_dir: str, config_path: str, dry_run: bool = False):
     """
     Watches a directory for new files and organizes them automatically.
     """
     if not os.path.exists(target_dir):
-        console.print(f"[red]Error: Directory '{target_dir}' does not exist.[/red]")
+        print(f"[-] Error: Directory '{target_dir}' does not exist.")
         return
 
     classifier = FileClassifier(target_dir, config_path)
@@ -55,9 +51,9 @@ def watch_directory(target_dir: str, config_path: str, dry_run: bool = False):
     observer = Observer()
     observer.schedule(event_handler, target_dir, recursive=False)
     
-    console.print(f"[*] Watching [bold]{target_dir}[/bold] for new files...")
+    print(f"[*] Watching {target_dir} for new files...")
     if dry_run:
-        console.print("[yellow][DRY RUN MODE] No files will actually be moved.[/yellow]")
+        print("[DRY RUN MODE] No files will actually be moved.")
         
     observer.start()
     try:
@@ -65,5 +61,6 @@ def watch_directory(target_dir: str, config_path: str, dry_run: bool = False):
             time.sleep(1)
     except KeyboardInterrupt:
         observer.stop()
-        console.print("\n[*] Stopped watching.")
+        print("\n[*] Stopped watching.")
     observer.join()
+

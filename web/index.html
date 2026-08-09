@@ -3,161 +3,167 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartSort Engine</title>
+  <title>SmartSort</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="SS_1.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="particles-bg"></div>
-
-  <div class="terminal-app-container">
-    <!-- Top Header Bar -->
-    <header class="terminal-header glass-card">
-      <div class="header-left">
-        <h1 class="header-title">SMARTSORT</h1>
+  <div class="app-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <img src="SS_1.png" alt="SmartSort Logo" class="app-brand-img" />
+        <span class="app-brand-name">SmartSort</span>
       </div>
 
-      <div class="header-right">
-        <div class="path-input-group">
-          <span class="prompt-symbol">$</span>
-          <input type="text" id="targetPath" placeholder="Target folder path (click Browse Folder or type)..." readonly />
-          <button id="browseBtn" class="pill-btn pill-red">
-            <span class="dot red"></span> BROWSE FOLDER
-          </button>
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Navigation</div>
+        
+        <div class="nav-item active" data-view="overview">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </span>
+          Overview
         </div>
-      </div>
-    </header>
 
-    <!-- Pill Action Toolbar -->
-    <section class="toolbar-section">
-      <div class="toolbar-group">
-        <button id="organizeBtn" class="pill-btn pill-red active-pill"><span class="dot red"></span> ORGANIZE</button>
-        <button id="dryRunBtn" class="pill-btn"><span class="dot muted"></span> DRY RUN</button>
-        <button id="scanBtn" class="pill-btn"><span class="dot muted"></span> SCAN STORAGE</button>
-        <button id="topFilesBtn" class="pill-btn"><span class="dot muted"></span> TOP FILES</button>
-        <button id="cleanEmptyBtn" class="pill-btn"><span class="dot muted"></span> CLEAN EMPTY</button>
-        <button id="undoBtn" class="pill-btn"><span class="dot muted"></span> UNDO LAST</button>
-        <button id="historyBtn" class="pill-btn"><span class="dot muted"></span> HISTORY</button>
-        <button id="clearBtn" class="pill-btn"><span class="dot muted"></span> CLEAR</button>
-        <button id="helpBtn" class="pill-btn"><span class="dot red"></span> HELP</button>
-      </div>
-    </section>
-
-    <!-- Main Terminal Screen Frame -->
-    <main class="terminal-screen-card glass-card">
-      <div class="terminal-screen-header">
-        <div class="window-controls">
-          <span class="control-dot close"></span>
-          <span class="control-dot minimize"></span>
-          <span class="control-dot expand"></span>
+        <div class="nav-item" data-view="organize">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+            </svg>
+          </span>
+          Organize
         </div>
-        <span class="window-title">smartsort@terminal:~</span>
+
+        <div class="nav-item" data-view="history">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </span>
+          History & Undo
+        </div>
+
+        <div class="nav-section-title">Help</div>
+
+        <div class="nav-item" id="helpNavBtn" data-view="docs">
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          </span>
+          Documentation
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        Engine v1.2
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Top Bar: Target Folder Picker -->
+      <header class="top-bar">
+        <div class="folder-selector">
+          <span class="icon-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+            </svg>
+          </span>
+          <input type="text" id="targetPath" placeholder="Select target folder to organize..." readonly />
+        </div>
+
+        <button class="btn-secondary" id="browseBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
+          </svg>
+          Browse Folder
+        </button>
+      </header>
+
+      <!-- Action Ribbon -->
+      <section class="actions-ribbon">
+        <button class="ribbon-btn highlight" id="scanBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Scan Directory
+        </button>
+
+        <button class="ribbon-btn" id="dryRunBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
+          </svg>
+          Dry Run (Test)
+        </button>
+
+        <button class="btn-primary" id="organizeBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+          </svg>
+          Organize Files
+        </button>
+
+        <div style="flex: 1;"></div>
+
+        <button class="ribbon-btn" id="topFilesBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Top Files
+        </button>
+
+        <button class="ribbon-btn" id="cleanEmptyBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          </svg>
+          Clean Empty
+        </button>
+
+        <button class="ribbon-btn" id="undoBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
+          </svg>
+          Undo
+        </button>
+      </section>
+
+      <!-- Active Content Workspace -->
+      <div class="content-area" id="contentArea">
+        <!-- Rendered by app.js -->
       </div>
 
-      <div class="terminal-body" id="terminalBody">
-        <!-- Banner and Logs rendered here -->
-      </div>
+      <!-- Footer Status Bar -->
+      <footer class="footer-bar">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Ready</span>
+      </footer>
     </main>
-
-    <!-- Bottom Command Prompt Entry -->
-    <footer class="prompt-bar glass-card">
-      <span class="prompt-label">smartsort $</span>
-      <input type="text" id="cmdInput" placeholder="type command (sort, scan, top-files, dry-run, clean-empty, ls, history, undo, help)..." autocomplete="off" />
-      <span class="blinking-cursor">_</span>
-    </footer>
   </div>
 
-  <!-- Help & User Guide Terminal Modal -->
-  <div id="helpModal" class="modal-overlay hidden">
-    <div class="modal-card glass-card">
+  <!-- Help Modal -->
+  <div class="modal-overlay hidden" id="helpModal">
+    <div class="modal-card">
       <div class="modal-header">
-        <div class="window-controls">
-          <span class="control-dot close" id="closeHelpModalDot"></span>
-          <span class="control-dot minimize"></span>
-          <span class="control-dot expand"></span>
-        </div>
-        <span class="modal-title">smartsort@guide:~ $ help</span>
-        <button id="closeHelpModalBtn" class="close-btn">✕</button>
+        <h3>SmartSort User Guide</h3>
+        <button class="modal-close" id="closeHelpBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
-
       <div class="modal-body">
-        <div class="guide-section">
-          <h2 class="guide-title">🚀 User Quick Start Guide</h2>
-          <div class="steps-grid">
-            <div class="step-item">
-              <span class="step-num">1</span>
-              <div class="step-text">
-                <strong>Select Folder</strong>
-                <p>Click <code>● BROWSE FOLDER</code> to pick your Downloads, Desktop, or clutter folder.</p>
-              </div>
-            </div>
-
-            <div class="step-item">
-              <span class="step-num">2</span>
-              <div class="step-text">
-                <strong>Inspect Space</strong>
-                <p>Click <code>● SCAN STORAGE</code> to view folder sizes or <code>● TOP FILES</code> for large files.</p>
-              </div>
-            </div>
-
-            <div class="step-item">
-              <span class="step-num">3</span>
-              <div class="step-text">
-                <strong>Safe Simulation</strong>
-                <p>Click <code>● DRY RUN</code> to test where files will move without changing anything.</p>
-              </div>
-            </div>
-
-            <div class="step-item">
-              <span class="step-num">4</span>
-              <div class="step-text">
-                <strong>Organize Files</strong>
-                <p>Click <code>● ORGANIZE</code> to automatically group files into Audio, Documents, Images, etc.</p>
-              </div>
-            </div>
-
-            <div class="step-item">
-              <span class="step-num">5</span>
-              <div class="step-text">
-                <strong>Clean Up</strong>
-                <p>Click <code>● CLEAN EMPTY</code> to detect and prune empty abandoned directories.</p>
-              </div>
-            </div>
-
-            <div class="step-item">
-              <span class="step-num">6</span>
-              <div class="step-text">
-                <strong>Undo Anytime</strong>
-                <p>Click <code>● UNDO LAST</code> or type <code>undo</code> to instantly restore moved files.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="guide-section">
-          <h2 class="guide-title">⌨️ Terminal Commands</h2>
-          <table class="cheat-table">
-            <thead>
-              <tr>
-                <th>Command</th>
-                <th>Description</th>
-                <th>Example</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td><code>sort</code></td><td>Organize target directory</td><td><code>sort C:\Downloads</code></td></tr>
-              <tr><td><code>dry-run</code></td><td>Test run without moving files</td><td><code>dry-run C:\Downloads</code></td></tr>
-              <tr><td><code>scan</code></td><td>View storage category breakdown</td><td><code>scan</code></td></tr>
-              <tr><td><code>top-files</code></td><td>List 10 largest files</td><td><code>top-files</code></td></tr>
-              <tr><td><code>clean-empty</code></td><td>Prune empty subfolders</td><td><code>clean-empty</code></td></tr>
-              <tr><td><code>history</code></td><td>View move history log</td><td><code>history</code></td></tr>
-              <tr><td><code>undo</code></td><td>Restore last moved file(s)</td><td><code>undo</code></td></tr>
-              <tr><td><code>clear</code></td><td>Wipe log screen</td><td><code>clear</code></td></tr>
-            </tbody>
-          </table>
-        </div>
+        <p><strong>1. Select Target Folder</strong> — Click <code>Browse Folder</code> to choose the directory you wish to organize.</p>
+        <p><strong>2. Scan Directory</strong> — Preview storage size breakdown and inspect file categories before performing any move.</p>
+        <p><strong>3. Dry Run</strong> — Test rule execution safely without moving files.</p>
+        <p><strong>4. Organize Files</strong> — Automatically sort documents, photos (sorted by EXIF date), executables, and media into structured subfolders.</p>
+        <p><strong>5. Undo & History</strong> — Revert file movements anytime using SQLite transaction records.</p>
       </div>
     </div>
   </div>

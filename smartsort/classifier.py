@@ -15,12 +15,17 @@ class FileClassifier:
         self.rule_engine = RuleEngine(config_path)
 
     def _extract_file_info(self, filepath: str) -> dict:
+        try:
+            ctime = datetime.fromtimestamp(os.path.getctime(filepath))
+        except (PermissionError, OSError, OverflowError, ValueError):
+            ctime = datetime.now()
+
         info = {
             'name': os.path.basename(filepath).lower(),
             'extension': '',
             'has_exif_date': False,
             'exif_date': None,
-            'creation_date': datetime.fromtimestamp(os.path.getctime(filepath))
+            'creation_date': ctime
         }
 
         # Primary extension from filename
@@ -83,51 +88,58 @@ class FileClassifier:
         """
         Processes a single file. Returns a summary dictionary.
         """
-        if not os.path.exists(filepath):
-            return {'status': 'error', 'reason': 'File not found'}
+        try:
+            if not os.path.exists(filepath):
+                return {'status': 'error', 'reason': 'File not found'}
 
-        info = self._extract_file_info(filepath)
-        rule_name, dest_template = self.rule_engine.evaluate(info)
+            info = self._extract_file_info(filepath)
+            rule_name, dest_template = self.rule_engine.evaluate(info)
 
-        if not dest_template:
-            # Fallback for files that don't match rules
-            rule_name = "Default fallback"
-            dest_template = "Unsorted"
+            if not dest_template:
+                # Fallback for files that don't match rules
+                rule_name = "Default fallback"
+                dest_template = "Unsorted"
 
-        destination_dir = self._format_destination(dest_template, info)
-        
-        # Check duplicates
-        is_exact, dup_path, reason = find_duplicate_in_dir(filepath, destination_dir)
-        
-        if is_exact:
-            filename = os.path.basename(filepath)
-            dup_dir = os.path.join(self.target_dir, "Duplicates")
-            target_path = self._get_unique_path(dup_dir, filename)
+            destination_dir = self._format_destination(dest_template, info)
             
+            # Check duplicates
+            is_exact, dup_path, reason = find_duplicate_in_dir(filepath, destination_dir)
+            
+            if is_exact:
+                filename = os.path.basename(filepath)
+                dup_dir = os.path.join(self.target_dir, "Duplicates")
+                target_path = self._get_unique_path(dup_dir, filename)
+                
+                if not dry_run:
+                    os.makedirs(dup_dir, exist_ok=True)
+                    shutil.move(filepath, target_path)
+                    log_move(filepath, target_path, "Duplicate detection")
+
+                return {
+                    'status': 'duplicate',
+                    'file': filename,
+                    'rule': rule_name,
+                    'destination': target_path,
+                    'reason': f'Exact match of {os.path.basename(dup_path or "")} -> moved to Duplicates'
+                }
+                
+            filename = os.path.basename(filepath)
+            target_path = self._get_unique_path(destination_dir, filename)
+
             if not dry_run:
-                os.makedirs(dup_dir, exist_ok=True)
+                os.makedirs(destination_dir, exist_ok=True)
                 shutil.move(filepath, target_path)
-                log_move(filepath, target_path, "Duplicate detection")
+                log_move(filepath, target_path, rule_name)
 
             return {
-                'status': 'duplicate',
+                'status': 'moved',
                 'file': filename,
                 'rule': rule_name,
-                'destination': target_path,
-                'reason': f'Exact match of {os.path.basename(dup_path or "")} -> moved to Duplicates'
+                'destination': target_path
             }
-            
-        filename = os.path.basename(filepath)
-        target_path = self._get_unique_path(destination_dir, filename)
-
-        if not dry_run:
-            os.makedirs(destination_dir, exist_ok=True)
-            shutil.move(filepath, target_path)
-            log_move(filepath, target_path, rule_name)
-
-        return {
-            'status': 'moved',
-            'file': filename,
-            'rule': rule_name,
-            'destination': target_path
-        }
+        except (PermissionError, OSError) as e:
+            return {
+                'status': 'error',
+                'file': os.path.basename(filepath),
+                'reason': f'Permission denied / system locked file'
+            }
