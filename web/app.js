@@ -194,11 +194,11 @@
   function header(title, subtitle, actions = '') {
     return `
       <div class="page-header">
-        <div>
+        <div class="page-header-text">
           <h1 class="page-title">${esc(title)}</h1>
           ${subtitle ? `<p class="page-subtitle">${subtitle}</p>` : ''}
         </div>
-        <div class="page-actions">${actions}</div>
+        ${actions ? `<div class="page-actions">${actions}</div>` : ''}
       </div>`;
   }
   const stat = (label, value, sub = '', icon = '', cls = '') => `
@@ -208,7 +208,7 @@
       ${sub ? `<div class="stat-sub" title="${esc(sub)}">${esc(sub)}</div>` : ''}
     </div>`;
   const emptyState = (icon, title, text, button = '') => `
-    <div class="empty">
+    <div class="empty-state">
       <div class="empty-icon">${icon}</div>
       <h3>${esc(title)}</h3>
       <p>${text}</p>
@@ -276,7 +276,8 @@
   function updateFolderBar() {
     const bar = $('#folderBar');
     const has = !!state.folder;
-    bar.classList.toggle('empty', !has);
+    bar.classList.toggle('has-folder', has);
+    bar.classList.toggle('no-folder', !has);
     bar.title = has ? state.folder : 'Choose a folder';
     $('#folderName').textContent = has ? baseName(state.folder) : 'No folder selected';
     $('#folderPath').textContent = has ? state.folder : 'Choose a folder to scan and organize';
