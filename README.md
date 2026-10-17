@@ -224,12 +224,9 @@ All 10 unit tests for deduplication, batched undo, rules evaluation, and classif
 
 ---
 
-## 📄 License
-
-Distributed under the **MIT License**. See [LICENSE](LICENSE) for details.
 
 <div align="center">
 
-Crafted with care by [**Haruuowo**](https://github.com/Haruuowo)
+Crafted with care by [**Doton, John Harold**](https://github.com/Haruuowo)
 
 </div>
