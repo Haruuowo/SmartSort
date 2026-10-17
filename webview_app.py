@@ -29,10 +29,10 @@ def run_app():
     webview.create_window(
         title="SmartSort",
         url=url,
-        width=1180,
-        height=760,
+        width=1160,
+        height=740,
         resizable=True,
-        min_size=(960, 620),
+        min_size=(740, 500),
         background_color="#0c0c10",
         text_select=False,
         js_api=DesktopAPI()

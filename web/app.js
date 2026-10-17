@@ -355,16 +355,24 @@
   // ── Overview ───────────────────────────────────────────────────────────
   views.overview = async token => {
     if (!state.folder) return renderWelcome();
-    const refresh = `<button class="btn btn-ghost" data-action="refresh-scan">${I.refresh}Refresh</button>`;
+    const refresh = `<button class="btn btn-ghost btn-sm" data-action="refresh-scan">${I.refresh}Refresh</button>`;
 
     if (!state.scan || state.scan.folder !== state.folder) {
-      mount(header('Overview', esc(state.folder), refresh) + `
-        <div class="stats">${'<div class="skeleton" style="height:92px"></div>'.repeat(4)}</div>
-        <div class="skeleton section" style="height:170px"></div>
-        <div class="grid-2 section"><div class="skeleton" style="height:300px"></div><div class="skeleton" style="height:300px"></div></div>`);
+      mount(header('Folder Overview', esc(state.folder), refresh) + `
+        <div class="workflow-steps">
+          <div class="workflow-step active"><span class="step-bubble">1</span> Folder Overview</div>
+          <span class="workflow-sep">→</span>
+          <div class="workflow-step"><span class="step-bubble">2</span> Preview Plan</div>
+          <span class="workflow-sep">→</span>
+          <div class="workflow-step"><span class="step-bubble">3</span> Organized</div>
+        </div>
+        <div class="skeleton" style="height:100px;margin-bottom:16px"></div>
+        <div class="stats">${'<div class="skeleton" style="height:86px"></div>'.repeat(4)}</div>
+        <div class="skeleton section" style="height:160px"></div>
+        <div class="grid-2 section"><div class="skeleton" style="height:260px"></div><div class="skeleton" style="height:260px"></div></div>`);
       const res = await api('scan', { path: state.folder });
       if (token !== viewToken) return;
-      if (!res.success) return mount(header('Overview', esc(state.folder)) + errorState(res.error));
+      if (!res.success) return mount(header('Folder Overview', esc(state.folder)) + errorState(res.error));
       state.scan = { folder: state.folder, data: res };
     }
 
@@ -376,8 +384,41 @@
 
     const actions = `
       ${refresh}
-      <button class="btn btn-secondary" data-action="clean-empty" title="Delete empty subfolders">${I.broom}Remove empty folders</button>
-      ${d.total_files ? `<button class="btn btn-primary" data-action="goto-organize">${I.folderCheck}Organize ${plural(d.total_files, 'file')}</button>` : ''}`;
+      <button class="btn btn-secondary btn-sm" data-action="clean-empty" title="Delete empty subfolders">${I.broom}Clean empty folders</button>
+      ${d.total_files ? `<button class="btn btn-primary btn-sm" data-action="goto-organize">${I.folderCheck}Organize ${plural(d.total_files, 'file')}</button>` : ''}`;
+
+    const workflowSteps = `
+      <div class="workflow-steps">
+        <div class="workflow-step active"><span class="step-bubble">1</span> Folder Overview</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step"><span class="step-bubble">2</span> Preview Plan</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step"><span class="step-bubble">3</span> Organized</div>
+      </div>`;
+
+    const banner = d.total_files > 0 ? `
+      <div class="action-banner">
+        <div class="action-banner-body">
+          <span class="action-banner-badge">Step 1: Scanned</span>
+          <div class="action-banner-title">Found ${plural(d.total_files, 'file')} ready to organize in “${esc(baseName(state.folder))}”</div>
+          <div class="action-banner-text">SmartSort can group these files into clean folders by type & date. You will see a full interactive preview before anything moves.</div>
+        </div>
+        <div class="action-banner-btns">
+          <button class="btn btn-primary btn-lg" data-action="goto-organize">
+            ${I.folderCheck} Preview &amp; Organize Files →
+          </button>
+        </div>
+      </div>` : `
+      <div class="action-banner ok">
+        <div class="action-banner-body">
+          <span class="action-banner-badge" style="background:var(--success)">All Clean</span>
+          <div class="action-banner-title">No loose files in “${esc(baseName(state.folder))}”</div>
+          <div class="action-banner-text">This folder is already neat and organized! Choose another folder to scan and organize.</div>
+        </div>
+        <div class="action-banner-btns">
+          <button class="btn btn-secondary" data-action="browse">${I.folderPlus}Choose another folder</button>
+        </div>
+      </div>`;
 
     const composition = d.total_files ? `
       <div class="stack-bar">
@@ -413,18 +454,21 @@
         <span class="row-num" style="width:70px">${esc(s.formatted_size)}</span>
       </div>`).join('');
 
-    mount(header('Overview', esc(state.folder), actions) + `
+    mount(header('Folder Overview', esc(state.folder), actions) + `
+      ${workflowSteps}
+      ${banner}
+
       <div class="stats">
-        ${stat('Loose files', fmtNum(d.total_files), 'Directly in this folder', I.files, 'accent')}
-        ${stat('Size of loose files', d.formatted_size, d.total_files ? `Avg ${fmtSize(d.total_size / d.total_files)} per file` : '—', I.disk)}
-        ${stat('Subfolders', fmtNum(subs.length), subs.length ? `${fmtSize(subTotal)} in total` : 'None', I.folder)}
-        ${stat('Largest type', topCat ? topCat[0] : '—', topCat ? `${topCat[1].formatted_size} · ${plural(topCat[1].count, 'file')}` : 'No loose files', I.chart)}
+        ${stat('Files to organize', fmtNum(d.total_files), 'In this root directory', I.files, 'accent')}
+        ${stat('Total files size', d.formatted_size, d.total_files ? `Avg ${fmtSize(d.total_size / d.total_files)} per file` : '—', I.disk)}
+        ${stat('Subfolders', fmtNum(subs.length), subs.length ? `${fmtSize(subTotal)} inside` : 'None', I.folder)}
+        ${stat('Largest type', topCat ? topCat[0] : '—', topCat ? `${topCat[1].formatted_size} · ${plural(topCat[1].count, 'file')}` : 'No files', I.chart)}
       </div>
 
       <div class="card section">
         <div class="card-header">
           <span class="card-title">What's in this folder</span>
-          <span class="card-meta">${plural(d.total_files, 'loose file')} · ${esc(d.formatted_size)}</span>
+          <span class="card-meta">${plural(d.total_files, 'file')} · ${esc(d.formatted_size)}</span>
         </div>
         <div class="card-pad">${composition}</div>
       </div>
@@ -533,21 +577,47 @@
       <button class="btn btn-primary" data-action="organize" ${toMove ? '' : 'disabled'}>${I.folderCheck}Organize ${plural(toMove, 'file')}</button>`;
 
     if (!d.total) {
-      return mount(header('Organize', esc(state.folder), actions) + `<div class="card">${emptyState(I.checkCircle, 'Nothing to organize',
+      return mount(header('Preview Organization Plan', esc(state.folder), actions) + `<div class="card">${emptyState(I.checkCircle, 'Nothing to organize',
         'There are no loose files in this folder. Files inside subfolders are never touched.')}</div>`);
     }
 
-    mount(header('Organize', 'Review the plan below — nothing is moved until you click <strong>Organize</strong>.', actions) + `
+    const workflowSteps = `
+      <div class="workflow-steps">
+        <div class="workflow-step done"><span class="step-bubble">✓</span> 1. Folder Scanned</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step active"><span class="step-bubble">2</span> 2. Preview Plan</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step"><span class="step-bubble">3</span> 3. Organized</div>
+      </div>`;
+
+    const banner = `
+      <div class="action-banner">
+        <div class="action-banner-body">
+          <span class="action-banner-badge">Step 2: Preview Plan</span>
+          <div class="action-banner-title">Ready to organize ${plural(toMove, 'file')} into ${plural(destCount, 'folder')}?</div>
+          <div class="action-banner-text">Click any category folder below to see what files will go inside. <strong>No files are moved until you click Start Organizing.</strong> You can undo this entire run anytime from History.</div>
+        </div>
+        <div class="action-banner-btns">
+          <button class="btn btn-primary btn-lg" data-action="organize" ${toMove ? '' : 'disabled'}>
+            ${I.folderCheck} Start Organizing (${plural(toMove, 'file')})
+          </button>
+        </div>
+      </div>`;
+
+    mount(header('Preview Organization Plan', 'Check where files will move — nothing changes until you confirm.', actions) + `
+      ${workflowSteps}
+      ${banner}
+
       <div class="stats">
         ${stat('Files to move', fmtNum(toMove), d.moved_size, I.files, 'accent')}
-        ${stat('Destination folders', fmtNum(destCount), destCount ? 'Created if needed' : '—', I.layers)}
-        ${stat('Duplicates', fmtNum(d.duplicates), d.duplicates ? 'Moved to “Duplicates”' : 'None found', I.copy, d.duplicates ? 'warn' : '')}
-        ${stat('Left in place', fmtNum(left), left ? 'System, hidden or locked files' : 'Nothing skipped', I.skip)}
+        ${stat('Destination folders', fmtNum(destCount), destCount ? 'Created inside target' : '—', I.layers)}
+        ${stat('Exact duplicates', fmtNum(d.duplicates), d.duplicates ? 'Moved to “Duplicates”' : 'No duplicates found', I.copy, d.duplicates ? 'warn' : '')}
+        ${stat('Left in place', fmtNum(left), left ? 'System or in-progress files' : 'Nothing skipped', I.skip)}
       </div>
 
       <div class="section">
         <div class="section-title">
-          <span>Where files will go</span>
+          <span>Categorized Folders (Click to inspect files)</span>
           <span style="display:flex;gap:4px;text-transform:none;letter-spacing:0">
             <button class="btn btn-ghost btn-sm" data-action="expand-all">Expand all</button>
             <button class="btn btn-ghost btn-sm" data-action="collapse-all">Collapse all</button>
@@ -557,8 +627,7 @@
       </div>
 
       <div class="notice section">${I.shield}
-        <div>Only files directly inside <strong>${esc(baseName(state.folder))}</strong> are moved, and only into folders within it.
-        Every run is recorded in <strong>History</strong> so you can undo it completely.</div>
+        <div><strong>Zero Risk:</strong> Files inside existing subfolders are never touched. You can safely revert all movements anytime with 1-click Undo from the History tab.</div>
       </div>`);
   }
 
@@ -605,16 +674,26 @@
     const failed = r.items.filter(it => it.status === 'error');
     const title = r.cancelled ? `Stopped after ${plural(moved, 'file')}` : moved ? `${plural(moved, 'file')} organized` : 'Nothing was moved';
 
+    const workflowSteps = `
+      <div class="workflow-steps">
+        <div class="workflow-step done"><span class="step-bubble">✓</span> 1. Scanned</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step done"><span class="step-bubble">✓</span> 2. Previewed</div>
+        <span class="workflow-sep">→</span>
+        <div class="workflow-step active done" style="color:var(--accent-text)"><span class="step-bubble" style="background:var(--gradient);color:#fff">✓</span> 3. Organized!</div>
+      </div>`;
+
     mount(`
+      ${workflowSteps}
       <div class="card" style="margin-top:8px">
-        <div class="hero" style="padding:44px 24px 34px">
+        <div class="hero" style="padding:40px 24px 30px">
           <div class="result-icon ${r.cancelled || failed.length ? 'warn' : ''}">${r.cancelled || failed.length ? I.alert : I.check}</div>
           <h1>${esc(title)}</h1>
           <p>${moved ? `Moved into ${plural(folders.size, 'folder')} inside “${esc(baseName(r.target))}” · ${esc(r.moved_size)}` : 'No files needed to be moved.'}</p>
           <div class="result-actions">
-            ${moved && r.batch_id ? `<button class="btn btn-secondary" data-action="undo-batch" data-id="${r.batch_id}" data-count="${moved}" data-label="${esc(baseName(r.target))}">${I.undo}Undo</button>` : ''}
-            <button class="btn btn-secondary" data-action="reveal" data-path="${esc(r.target)}">${I.external}Open folder</button>
-            <button class="btn btn-primary" data-action="done">Done</button>
+            ${moved && r.batch_id ? `<button class="btn btn-secondary" data-action="undo-batch" data-id="${r.batch_id}" data-count="${moved}" data-label="${esc(baseName(r.target))}">${I.undo}Undo All</button>` : ''}
+            <button class="btn btn-secondary" data-action="reveal" data-path="${esc(r.target)}">${I.external}Show in File Explorer</button>
+            <button class="btn btn-primary" data-action="done">Back to Overview</button>
           </div>
         </div>
       </div>
@@ -679,18 +758,23 @@
 
   // ── History ────────────────────────────────────────────────────────────
   views.history = async token => {
-    const head = header('History', 'Every organize run is saved here and can be undone.');
-    mount(head + `<div class="card">${'<div class="row"><div class="skeleton" style="height:30px;flex:1;border:0"></div></div>'.repeat(4)}</div>`);
+    const head = header('History & Undo', 'Every organize run is saved here and can be undone with one click.');
+    const guidance = `
+      <div class="notice" style="margin-bottom:16px">${I.shield}
+        <div><strong>Revert anytime:</strong> Made a mistake or want files back where they came from? Click the <strong>Undo</strong> button next to any session below to restore all files immediately.</div>
+      </div>`;
+
+    mount(head + guidance + `<div class="card">${'<div class="row"><div class="skeleton" style="height:30px;flex:1;border:0"></div></div>'.repeat(4)}</div>`);
     const r = await api('history', { limit: 100 });
     if (token !== viewToken) return;
-    if (!r.success) return mount(head + errorState(r.error));
+    if (!r.success) return mount(head + guidance + errorState(r.error));
     if (!r.batches.length) {
-      return mount(head + `<div class="card">${emptyState(I.clock, 'No activity yet',
-        'When you organize a folder, the run shows up here so you can undo it later.',
+      return mount(head + guidance + `<div class="card">${emptyState(I.clock, 'No past organize sessions yet',
+        'When you organize a folder, a snapshot will appear here with a 1-click Undo button.',
         `<button class="btn btn-secondary" data-action="goto-organize">${I.folderCheck}Go to Organize</button>`)}</div>`);
     }
 
-    mount(head + `<div class="card list">${r.batches.map(b => {
+    mount(head + guidance + `<div class="card list">${r.batches.map(b => {
       const undone = b.remaining === 0;
       const partial = !undone && b.remaining < b.total;
       const name = b.target_dir ? baseName(b.target_dir) : 'Earlier activity';
