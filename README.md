@@ -109,6 +109,10 @@ No installation or Python environment required:
 2. Download `SmartSort.exe`
 3. Double-click to launch!
 
+> **Note on Windows SmartScreen ("Windows protected your PC"):**  
+> Because SmartSort is an independent open-source project and does not possess an expensive commercial code-signing certificate (~$400/year), Microsoft Defender SmartScreen may display an *"Unrecognized app"* prompt on brand new releases.  
+> Simply click **More info** ➔ **Run anyway**. SmartSort is 100% open-source, and you can audit the source code right here.
+
 ### Option 2: Run from Source
 ```bash
 # 1. Clone the repository
