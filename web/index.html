@@ -3,185 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="SmartSort organizes your folders into tidy categories with a preview first and one-click undo.">
   <title>SmartSort</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="SS_1.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-layout">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <img src="SS_1.png" alt="SmartSort Logo" class="app-brand-img" />
-        <span class="app-brand-name">SmartSort</span>
+  <div class="app">
+    <aside class="sidebar" aria-label="Main navigation">
+      <div class="brand">
+        <img src="SS_1.png" alt="" class="brand-logo" width="30" height="30">
+        <div class="brand-text">
+          <span class="brand-name">SmartSort</span>
+          <span class="brand-sub">File organizer</span>
+        </div>
       </div>
 
-      <nav class="sidebar-nav">
-        <div class="nav-section-title">Navigation</div>
-        
-        <div class="nav-item active" data-view="overview">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-            </svg>
-          </span>
-          Overview
-        </div>
-
-        <div class="nav-item" data-view="organize">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
-            </svg>
-          </span>
-          Organize
-        </div>
-
-        <div class="nav-item" data-view="history">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-            </svg>
-          </span>
-          History & Undo
-        </div>
-
-        <div class="nav-section-title">Help</div>
-
-        <div class="nav-item" id="helpNavBtn" data-view="docs">
-          <span class="nav-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-            </svg>
-          </span>
-          Documentation
-        </div>
+      <nav class="nav" id="mainNav">
+        <button class="nav-item" data-view="overview" id="navOverview">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+          <span>Overview</span>
+        </button>
+        <button class="nav-item" data-view="organize" id="navOrganize">
+          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="m9 13 2 2 4-4"/></svg>
+          <span>Organize</span>
+        </button>
+        <button class="nav-item" data-view="history" id="navHistory">
+          <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+          <span>History</span>
+        </button>
+        <button class="nav-item" data-view="rules" id="navRules">
+          <svg viewBox="0 0 24 24"><path d="M4 6h10M4 12h16M4 18h7"/><circle cx="17" cy="6" r="2"/><circle cx="14" cy="18" r="2"/></svg>
+          <span>Rules</span>
+        </button>
       </nav>
 
-      <div class="sidebar-footer">
-        Engine v1.2
+      <div class="sidebar-bottom">
+        <button class="nav-item" data-view="help" id="navHelp">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.9.7c0 1.8-2.4 2.3-2.4 3.8"/><path d="M12 17h.01"/></svg>
+          <span>Help</span>
+        </button>
+        <div class="version" id="appVersion">SmartSort</div>
       </div>
     </aside>
 
-    <!-- Main Workspace -->
-    <main class="workspace">
-      <!-- Top Bar: Target Folder Picker -->
-      <header class="top-bar">
-        <div class="folder-selector">
-          <span class="icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-            </svg>
-          </span>
-          <input type="text" id="targetPath" placeholder="Select target folder to organize..." readonly />
+    <main class="main">
+      <header class="topbar">
+        <div class="folder-bar" id="folderBar" title="">
+          <div class="folder-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </div>
+          <div class="folder-text">
+            <span class="folder-name" id="folderName">No folder selected</span>
+            <span class="folder-path" id="folderPath">Choose a folder to scan and organize</span>
+          </div>
+          <button class="icon-btn hidden" id="revealFolderBtn" title="Open in File Explorer" aria-label="Open in File Explorer">
+            <svg viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/></svg>
+          </button>
         </div>
-
-        <button class="btn-secondary" id="browseBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/>
-          </svg>
-          Browse Folder
+        <button class="btn btn-secondary" id="browseBtn" title="Choose folder (Ctrl+O)">
+          <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5h5"/></svg>
+          <span>Choose folder</span>
         </button>
       </header>
 
-      <!-- Action Ribbon -->
-      <section class="actions-ribbon">
-        <button class="ribbon-btn highlight" id="scanBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-          </svg>
-          Scan Directory
-        </button>
-
-        <button class="ribbon-btn" id="dryRunBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/>
-          </svg>
-          Dry Run (Test)
-        </button>
-
-        <button class="btn-primary" id="organizeBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
-          </svg>
-          Organize Files
-        </button>
-
-        <div style="flex: 1;"></div>
-
-        <button class="ribbon-btn" id="topFilesBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-          </svg>
-          Top Files
-        </button>
-
-        <button class="ribbon-btn" id="cleanEmptyBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-          </svg>
-          Clean Empty
-        </button>
-
-        <button class="ribbon-btn" id="undoBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>
-          </svg>
-          Undo
-        </button>
-      </section>
-
-      <!-- Active Content Workspace -->
-      <div class="content-area" id="contentArea">
-        <!-- Rendered by app.js -->
-      </div>
-
-      <!-- Footer Status Bar -->
-      <footer class="footer-bar">
-        <span class="status-dot" id="statusDot"></span>
-        <span id="statusText">Ready</span>
-      </footer>
+      <section class="page" id="page" aria-live="polite"></section>
     </main>
   </div>
 
-  <!-- Help Modal -->
-  <div class="modal-overlay hidden" id="helpModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>SmartSort User Guide</h3>
-        <button class="modal-close" id="closeHelpBtn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p><strong>1. Select Target Folder</strong> — Click <code>Browse Folder</code> to choose the directory you wish to organize.</p>
-        <p><strong>2. Scan Directory</strong> — Preview storage size breakdown and inspect file categories before performing any move.</p>
-        <p><strong>3. Dry Run</strong> — Test rule execution safely without moving files.</p>
-        <p><strong>4. Organize Files</strong> — Automatically sort documents, photos (sorted by EXIF date), executables, and media into structured subfolders.</p>
-        <p><strong>5. Undo & History</strong> — Revert file movements anytime using SQLite transaction records.</p>
-      </div>
-    </div>
-  <!-- Custom Context Menu (WizTree style) -->
-  <div id="contextMenu" class="custom-context-menu hidden">
-    <div class="menu-header" id="menuItemTitle">Item</div>
-    <div class="menu-item" id="menuOpenLocation">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/><polyline points="12 11 12 17 9 14"/></svg>
-      Reveal in File Explorer
-    </div>
-    <div class="menu-item" id="menuCopyPath">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-      Copy Full Path
-    </div>
-    <div class="menu-divider"></div>
-    <div class="menu-item danger" id="menuDeleteItem">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-      Send to Recycle Bin
-    </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+  <div id="modalRoot"></div>
+
+  <div class="context-menu hidden" id="contextMenu" role="menu">
+    <div class="context-title" id="contextTitle"></div>
+    <button class="context-item" data-menu="reveal" id="menuReveal">
+      <svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      Show in File Explorer
+    </button>
+    <button class="context-item" data-menu="copy" id="menuCopy">
+      <svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>
+      Copy path
+    </button>
+    <div class="context-sep"></div>
+    <button class="context-item danger" data-menu="delete" id="menuDelete">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+      Move to Recycle Bin
+    </button>
   </div>
 
   <script src="app.js"></script>

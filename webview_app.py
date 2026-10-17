@@ -1,15 +1,15 @@
 import os
-import sys
 import webview
-from smartsort.server import bind_and_run_server, get_base_dir, open_in_explorer, delete_to_recycle_bin
+from smartsort.server import bind_and_run_server, get_user_data_dir, open_in_explorer, delete_to_recycle_bin
+
 
 class DesktopAPI:
     def browse_folder(self):
         try:
-            if webview.windows and len(webview.windows) > 0:
+            if webview.windows:
                 res = webview.windows[0].create_file_dialog(webview.FOLDER_DIALOG)
-                if res and len(res) > 0:
-                    return res[0]
+                if res:
+                    return os.path.normpath(res[0])
         except Exception as e:
             print(f"PyWebView browse error: {e}")
         return ""
@@ -20,25 +20,27 @@ class DesktopAPI:
     def delete_item(self, path):
         return delete_to_recycle_bin(path)
 
+
 def run_app():
     actual_port = bind_and_run_server(7860)
     url = f"http://127.0.0.1:{actual_port}"
     print(f"SmartSort Engine loading UI from {url}")
 
-    api = DesktopAPI()
-
     webview.create_window(
         title="SmartSort",
         url=url,
-        width=1040,
-        height=680,
+        width=1180,
+        height=760,
         resizable=True,
-        min_size=(840, 540),
-        background_color="#09090b",
-        js_api=api
+        min_size=(960, 620),
+        background_color="#0c0c10",
+        text_select=False,
+        js_api=DesktopAPI()
     )
 
-    webview.start()
+    # private_mode=False lets the UI remember the last folder between launches
+    webview.start(private_mode=False, storage_path=os.path.join(get_user_data_dir(), 'webview'))
+
 
 if __name__ == "__main__":
     run_app()
